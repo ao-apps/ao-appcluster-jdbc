@@ -131,7 +131,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 	protected ResourceSynchronizationResult synchronize(ResourceSynchronizationMode mode, ResourceNodeDnsResult localDnsResult, ResourceNodeDnsResult remoteDnsResult) {
 		final JdbcResource resource = localResourceNode.getResource();
 
-		List<ResourceSynchronizationResultStep> steps = new ArrayList<>();
+		List<ResourceSynchronizationResultStep> steps = new ArrayList<ResourceSynchronizationResultStep>();
 
 		// If exception is not caught within its own step, the error will be added with this step detail.
 		// Each step should update this.
@@ -272,7 +272,8 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 								stepWarning.setLength(0);
 								stepError.setLength(0);
 								try {
-									try (Statement stmt = toConn.createStatement()) {
+									Statement stmt = toConn.createStatement();
+									try {
 										int updateCount = stmt.executeUpdate(prepareSlave.getValue());
 										stepOutput.append(
 											ApplicationResources.accessor.getMessage(
@@ -281,6 +282,8 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 												updateCount
 											)
 										);
+									} finally {
+										stmt.close();
 									}
 								} catch(SQLException e) {
 									ErrorPrinter.printStackTraces(e, stepError);
@@ -399,7 +402,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		SortedMap<String,Table> toTables = toSchema.getTables();
 
 		// Get the union of all table names of included types that are not excluded
-		SortedSet<String> allTableNames = new TreeSet<>(DatabaseMetaData.getCollator());
+		SortedSet<String> allTableNames = new TreeSet<String>(DatabaseMetaData.getCollator());
 		for(Table table : fromTables.values()) {
 			String tableName = table.getName();
 			if(
@@ -451,7 +454,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 			// Compare columns
 			SortedMap<String,Column> fromColumns = fromTable.getColumnMap();
 			SortedMap<String,Column> toColumns = toTable.getColumnMap();
-			SortedSet<String> allColumnNames = new TreeSet<>(DatabaseMetaData.getCollator());
+			SortedSet<String> allColumnNames = new TreeSet<String>(DatabaseMetaData.getCollator());
 			allColumnNames.addAll(fromColumns.keySet());
 			allColumnNames.addAll(toColumns.keySet());
 			for(String columnName : allColumnNames) {
@@ -679,7 +682,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 	}
 
 	private static void testSchemasData(Connection fromConn, Connection toConn, int timeout, Catalog fromCatalog, Catalog toCatalog, Set<String> schemas, Set<String> tableTypes, Set<String> excludeTables, Set<String> noWarnTables, StringBuilder stepOutput, StringBuilder stepWarning) throws SQLException {
-		List<Object> outputTable = new ArrayList<>();
+		List<Object> outputTable = new ArrayList<Object>();
 		try {
 			for(String schema : schemas) {
 				testSchemaData(fromConn, toConn, timeout, fromCatalog.getSchema(schema), toCatalog.getSchema(schema), tableTypes, excludeTables, noWarnTables, outputTable, stepOutput, stepWarning);
@@ -1046,48 +1049,76 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		final List<Column> columns = fromTable.getColumns();
 		final Index primaryKey = fromTable.getPrimaryKey();
 		final String sql = getSelectSql(fromTable);
-		try (Statement fromStmt = fromConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
+		Statement fromStmt = fromConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT);
+		try {
 			fromStmt.setFetchDirection(ResultSet.FETCH_FORWARD);
 			fromStmt.setFetchSize(FETCH_SIZE);
-			try (Statement toStmt = toConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
+			Statement toStmt = toConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT);
+			try {
 				toStmt.setFetchDirection(ResultSet.FETCH_FORWARD);
 				toStmt.setFetchSize(FETCH_SIZE);
-				try (
-					ResultSet fromResults = fromStmt.executeQuery(sql);
-					ResultSet toResults = toStmt.executeQuery(sql)
-				) {
-					long matches = 0;
-					long modified = 0;
-					long missing = 0;
-					long extra = 0;
-					RowIterator fromIter = new RowIterator(columns, primaryKey, fromResults);
-					RowIterator toIter = new RowIterator(columns, primaryKey, toResults);
-					while(true) {
-						Row fromRow = fromIter.peek();
-						Row toRow = toIter.peek();
-						if(fromRow!=null) {
-							if(toRow!=null) {
-								int primaryKeyDiff = fromRow.compareTo(toRow);
-								if(primaryKeyDiff==0) {
-									// Primary keys have already been compared and are known to be equal, only need to compare the remaining columns
-									if(fromRow.equalsNonPrimaryKey(toRow)) {
-										// Exact match, remove both
-										matches++;
-									} else {
-										// Modified
+				ResultSet fromResults = fromStmt.executeQuery(sql);
+				try {
+					ResultSet toResults = toStmt.executeQuery(sql);
+					try {
+						long matches = 0;
+						long modified = 0;
+						long missing = 0;
+						long extra = 0;
+						RowIterator fromIter = new RowIterator(columns, primaryKey, fromResults);
+						RowIterator toIter = new RowIterator(columns, primaryKey, toResults);
+						while(true) {
+							Row fromRow = fromIter.peek();
+							Row toRow = toIter.peek();
+							if(fromRow!=null) {
+								if(toRow!=null) {
+									int primaryKeyDiff = fromRow.compareTo(toRow);
+									if(primaryKeyDiff==0) {
+										// Primary keys have already been compared and are known to be equal, only need to compare the remaining columns
+										if(fromRow.equalsNonPrimaryKey(toRow)) {
+											// Exact match, remove both
+											matches++;
+										} else {
+											// Modified
+											stepResults.append(
+												ApplicationResources.accessor.getMessage(
+													"JdbcResourceSynchronizer.testTableData.modified",
+													schema,
+													fromTable,
+													fromRow.getPrimaryKeyValues()
+												)
+											).append('\n');
+											modified++;
+										}
+										fromIter.remove();
+										toIter.remove();
+									} else if(primaryKeyDiff<0) {
+										// Missing
 										stepResults.append(
 											ApplicationResources.accessor.getMessage(
-												"JdbcResourceSynchronizer.testTableData.modified",
+												"JdbcResourceSynchronizer.testTableData.missing",
 												schema,
 												fromTable,
 												fromRow.getPrimaryKeyValues()
 											)
 										).append('\n');
-										modified++;
+										missing++;
+										fromIter.remove();
+									} else {
+										assert primaryKeyDiff>0;
+										// Extra
+										stepResults.append(
+											ApplicationResources.accessor.getMessage(
+												"JdbcResourceSynchronizer.testTableData.extra",
+												schema,
+												toTable,
+												toRow.getPrimaryKeyValues()
+											)
+										).append('\n');
+										extra++;
+										toIter.remove();
 									}
-									fromIter.remove();
-									toIter.remove();
-								} else if(primaryKeyDiff<0) {
+								} else {
 									// Missing
 									stepResults.append(
 										ApplicationResources.accessor.getMessage(
@@ -1099,8 +1130,9 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 									).append('\n');
 									missing++;
 									fromIter.remove();
-								} else {
-									assert primaryKeyDiff>0;
+								}
+							} else {
+								if(toRow!=null) {
 									// Extra
 									stepResults.append(
 										ApplicationResources.accessor.getMessage(
@@ -1112,53 +1144,35 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 									).append('\n');
 									extra++;
 									toIter.remove();
+								} else {
+									// All rows done
+									break;
 								}
-							} else {
-								// Missing
-								stepResults.append(
-									ApplicationResources.accessor.getMessage(
-										"JdbcResourceSynchronizer.testTableData.missing",
-										schema,
-										fromTable,
-										fromRow.getPrimaryKeyValues()
-									)
-								).append('\n');
-								missing++;
-								fromIter.remove();
-							}
-						} else {
-							if(toRow!=null) {
-								// Extra
-								stepResults.append(
-									ApplicationResources.accessor.getMessage(
-										"JdbcResourceSynchronizer.testTableData.extra",
-										schema,
-										toTable,
-										toRow.getPrimaryKeyValues()
-									)
-								).append('\n');
-								extra++;
-								toIter.remove();
-							} else {
-								// All rows done
-								break;
 							}
 						}
+						outputTable.add(schema);
+						outputTable.add(fromTable.getName());
+						outputTable.add(matches);
+						outputTable.add(modified==0 ? null : modified);
+						outputTable.add(missing==0 ? null : missing);
+						outputTable.add(extra==0 ? null : extra);
+					} finally {
+						toResults.close();
 					}
-					outputTable.add(schema);
-					outputTable.add(fromTable.getName());
-					outputTable.add(matches);
-					outputTable.add(modified==0 ? null : modified);
-					outputTable.add(missing==0 ? null : missing);
-					outputTable.add(extra==0 ? null : extra);
+				} finally {
+					fromResults.close();
 				}
+			} finally {
+				toStmt.close();
 			}
+		} finally {
+			fromStmt.close();
 		}
 	}
 
 	private static void synchronizeData(Connection fromConn, Connection toConn, int synchronizeTimeout, Catalog catalog, Set<String> schemas, Set<String> tableTypes, Set<String> excludeTables, StringBuilder stepOutput) throws SQLException {
 		// Find the set of tables that will be synchronized
-		Set<Table> tables = new LinkedHashSet<>();
+		Set<Table> tables = new LinkedHashSet<Table>();
 		for(String schemaName : schemas) {
 			Schema schema = catalog.getSchema(schemaName);
 			for(Table table : schema.getTables().values()) {
@@ -1171,20 +1185,20 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 			}
 		}
 
-		Map<Table,Long> matches = new HashMap<>();
-		Map<Table,Long> updates = new HashMap<>();
-		Map<Table,Long> inserts = new HashMap<>();
-		Map<Table,Long> deletes = new HashMap<>();
+		Map<Table,Long> matches = new HashMap<Table,Long>();
+		Map<Table,Long> updates = new HashMap<Table,Long>();
+		Map<Table,Long> inserts = new HashMap<Table,Long>();
+		Map<Table,Long> deletes = new HashMap<Table,Long>();
 		try {
 			// Topological sort based on foreign key dependencies
-			List<Table> sortedTables = new ArrayList<>(new TopologicalSorter<>(catalog.getForeignKeyGraph(tableTypes), true).sortGraph());
+			List<Table> sortedTables = new ArrayList<Table>(new TopologicalSorter<Table,SQLException>(catalog.getForeignKeyGraph(tableTypes), true).sortGraph());
 			//stepOutput.append("sortedTables=").append(sortedTables).append('\n');
 			sortedTables.retainAll(tables);
 			//stepOutput.append("sortedTables=").append(sortedTables).append('\n');
 
 			// Keep counts from the delete pass to help avoid unnecessary second scans
-			Map<Table,Long> modifieds = new HashMap<>();
-			Map<Table,Long> missings = new HashMap<>();
+			Map<Table,Long> modifieds = new HashMap<Table,Long>();
+			Map<Table,Long> missings = new HashMap<Table,Long>();
 
 			// Delete extra rows from each table backwards
 			for(int i=sortedTables.size()-1; i>=0; i--) {
@@ -1198,7 +1212,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 				}
 			}
 		} finally {
-			List<Object> outputTable = new ArrayList<>();
+			List<Object> outputTable = new ArrayList<Object>();
 			for(Table table : tables) {
 				Long update = updates.get(table);
 				Long insert = inserts.get(table);
@@ -1261,70 +1275,81 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		final List<Column> columns = table.getColumns();
 		final Index primaryKey = table.getPrimaryKey();
 		// Find rows to delete
-		List<Row> deleteRows = new ArrayList<>();
+		List<Row> deleteRows = new ArrayList<Row>();
 		String selectSql = getSelectSql(table);
-		try (Statement fromStmt = fromConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
+		Statement fromStmt = fromConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT);
+		try {
 			fromStmt.setFetchDirection(ResultSet.FETCH_FORWARD);
 			fromStmt.setFetchSize(FETCH_SIZE);
-			try (Statement toStmt = toConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
+			Statement toStmt = toConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT);
+			try {
 				toStmt.setFetchDirection(ResultSet.FETCH_FORWARD);
 				toStmt.setFetchSize(FETCH_SIZE);
-				try (
-					ResultSet fromResults = fromStmt.executeQuery(selectSql);
-					ResultSet toResults = toStmt.executeQuery(selectSql)
-				) {
-					long matches = 0;
-					long modified = 0;
-					long missing = 0;
-					RowIterator fromIter = new RowIterator(columns, primaryKey, fromResults);
-					RowIterator toIter = new RowIterator(columns, primaryKey, toResults);
-					while(true) {
-						Row fromRow = fromIter.peek();
-						Row toRow = toIter.peek();
-						if(fromRow!=null) {
-							if(toRow!=null) {
-								int primaryKeyDiff = fromRow.compareTo(toRow);
-								if(primaryKeyDiff==0) {
-									// Primary keys have already been compared and are known to be equal, only need to compare the remaining columns
-									if(fromRow.equalsNonPrimaryKey(toRow)) {
-										// Exact match, remove both
-										matches++;
+				ResultSet fromResults = fromStmt.executeQuery(selectSql);
+				try {
+					ResultSet toResults = toStmt.executeQuery(selectSql);
+					try {
+						long matches = 0;
+						long modified = 0;
+						long missing = 0;
+						RowIterator fromIter = new RowIterator(columns, primaryKey, fromResults);
+						RowIterator toIter = new RowIterator(columns, primaryKey, toResults);
+						while(true) {
+							Row fromRow = fromIter.peek();
+							Row toRow = toIter.peek();
+							if(fromRow!=null) {
+								if(toRow!=null) {
+									int primaryKeyDiff = fromRow.compareTo(toRow);
+									if(primaryKeyDiff==0) {
+										// Primary keys have already been compared and are known to be equal, only need to compare the remaining columns
+										if(fromRow.equalsNonPrimaryKey(toRow)) {
+											// Exact match, remove both
+											matches++;
+										} else {
+											modified++;
+										}
+										fromIter.remove();
+										toIter.remove();
+									} else if(primaryKeyDiff<0) {
+										// Missing
+										missing++;
+										fromIter.remove();
 									} else {
-										modified++;
+										assert primaryKeyDiff>0;
+										// Extra
+										deleteRows.add(toRow);
+										toIter.remove();
 									}
-									fromIter.remove();
-									toIter.remove();
-								} else if(primaryKeyDiff<0) {
+								} else {
 									// Missing
 									missing++;
 									fromIter.remove();
-								} else {
-									assert primaryKeyDiff>0;
+								}
+							} else {
+								if(toRow!=null) {
 									// Extra
 									deleteRows.add(toRow);
 									toIter.remove();
+								} else {
+									// All rows done
+									break;
 								}
-							} else {
-								// Missing
-								missing++;
-								fromIter.remove();
-							}
-						} else {
-							if(toRow!=null) {
-								// Extra
-								deleteRows.add(toRow);
-								toIter.remove();
-							} else {
-								// All rows done
-								break;
 							}
 						}
+						matchesMap.put(table, matches);
+						modifiedsMap.put(table, modified);
+						missingsMap.put(table, missing);
+					} finally {
+						toResults.close();
 					}
-					matchesMap.put(table, matches);
-					modifiedsMap.put(table, modified);
-					missingsMap.put(table, missing);
+				} finally {
+					fromResults.close();
 				}
+			} finally {
+				toStmt.close();
 			}
+		} finally {
+			fromStmt.close();
 		}
 
 		if(!deleteRows.isEmpty()) {
@@ -1357,7 +1382,8 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 					)
 				).append('\n');
 			}
-			try (PreparedStatement pstmt = toConn.prepareStatement(deleteSql.toString())) {
+			PreparedStatement pstmt = toConn.prepareStatement(deleteSql.toString());
+			try {
 				int pos = 1;
 				for(Row deleteRow : deleteRows) {
 					for(Column pkColumn : pkColumns) {
@@ -1369,6 +1395,8 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 				}
 				int numDeleted = pstmt.executeUpdate();
 				if(numDeleted!=deleteRows.size()) throw new SQLException("Unexpected number of rows deleted for "+schema+"."+table.getName()+": Expected "+deleteRows.size()+", got "+numDeleted);
+			} finally {
+				pstmt.close();
 			}
 		}
 		deletesMap.put(table, (long)deleteRows.size());
@@ -1394,7 +1422,8 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 					else didOne = true;
 					sql.append('"').append(pkColumn.getName()).append("\"=?");
 				}
-				try (PreparedStatement pstmt = fromConn.prepareStatement(sql.toString(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
+				PreparedStatement pstmt = fromConn.prepareStatement(sql.toString(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT);
+				try {
 					int pos = 1;
 					for(Column pkColumn : table.getPrimaryKey().getColumns()) {
 						pstmt.setObject(
@@ -1402,12 +1431,17 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 							row.values[pkColumn.getOrdinalPosition()-1]
 						);
 					}
-					try (ResultSet results = pstmt.executeQuery()) {
+					ResultSet results = pstmt.executeQuery();
+					try {
 						if(!results.next()) throw new NoRowException();
 						Object realValue = results.getObject(1);
 						if(results.next()) throw new SQLException("More than one row returned");
 						return realValue;
+					} finally {
+						results.close();
 					}
+				} finally {
+					pstmt.close();
 				}
 			}
 			// All others are already fully loaded
@@ -1435,69 +1469,80 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		final List<Column> columns = table.getColumns();
 		final Index primaryKey = table.getPrimaryKey();
 		// Find rows to update and insert
-		List<Row> updateRows = new ArrayList<>();
-		List<Row> insertRows = new ArrayList<>();
+		List<Row> updateRows = new ArrayList<Row>();
+		List<Row> insertRows = new ArrayList<Row>();
 		String selectSql = getSelectSql(table);
-		try (Statement fromStmt = fromConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
+		Statement fromStmt = fromConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT);
+		try {
 			fromStmt.setFetchDirection(ResultSet.FETCH_FORWARD);
 			fromStmt.setFetchSize(FETCH_SIZE);
-			try (Statement toStmt = toConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
+			Statement toStmt = toConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT);
+			try {
 				toStmt.setFetchDirection(ResultSet.FETCH_FORWARD);
 				toStmt.setFetchSize(FETCH_SIZE);
-				try (
-					ResultSet fromResults = fromStmt.executeQuery(selectSql);
-					ResultSet toResults = toStmt.executeQuery(selectSql)
-				) {
-					long matches = 0;
-					RowIterator fromIter = new RowIterator(columns, primaryKey, fromResults);
-					RowIterator toIter = new RowIterator(columns, primaryKey, toResults);
-					while(true) {
-						Row fromRow = fromIter.peek();
-						Row toRow = toIter.peek();
-						if(fromRow!=null) {
-							if(toRow!=null) {
-								int primaryKeyDiff = fromRow.compareTo(toRow);
-								if(primaryKeyDiff==0) {
-									// Primary keys have already been compared and are known to be equal, only need to compare the remaining columns
-									if(fromRow.equalsNonPrimaryKey(toRow)) {
-										// Exact match, remove both
-										matches++;
+				ResultSet fromResults = fromStmt.executeQuery(selectSql);
+				try {
+					ResultSet toResults = toStmt.executeQuery(selectSql);
+					try {
+						long matches = 0;
+						RowIterator fromIter = new RowIterator(columns, primaryKey, fromResults);
+						RowIterator toIter = new RowIterator(columns, primaryKey, toResults);
+						while(true) {
+							Row fromRow = fromIter.peek();
+							Row toRow = toIter.peek();
+							if(fromRow!=null) {
+								if(toRow!=null) {
+									int primaryKeyDiff = fromRow.compareTo(toRow);
+									if(primaryKeyDiff==0) {
+										// Primary keys have already been compared and are known to be equal, only need to compare the remaining columns
+										if(fromRow.equalsNonPrimaryKey(toRow)) {
+											// Exact match, remove both
+											matches++;
+										} else {
+											updateRows.add(fromRow);
+										}
+										fromIter.remove();
+										toIter.remove();
+									} else if(primaryKeyDiff<0) {
+										// Missing
+										insertRows.add(fromRow);
+										fromIter.remove();
 									} else {
-										updateRows.add(fromRow);
+										assert primaryKeyDiff>0;
+										// Extra
+										throw new SQLException("Should already have been deleted from "+schema+"."+table.getName()+": "+toRow.getPrimaryKeyValues());
+										// toIter.remove();
 									}
-									fromIter.remove();
-									toIter.remove();
-								} else if(primaryKeyDiff<0) {
+								} else {
 									// Missing
 									insertRows.add(fromRow);
 									fromIter.remove();
-								} else {
-									assert primaryKeyDiff>0;
-									// Extra
-									throw new SQLException("Should already have been deleted from "+schema+"."+table.getName()+": "+toRow.getPrimaryKeyValues());
-									// toIter.remove();
 								}
 							} else {
-								// Missing
-								insertRows.add(fromRow);
-								fromIter.remove();
-							}
-						} else {
-							if(toRow!=null) {
-								// Extra
-								throw new SQLException("Should already have been deleted from "+schema+"."+table.getName()+": "+toRow.getPrimaryKeyValues());
-								//toIter.remove();
-							} else {
-								// All rows done
-								break;
+								if(toRow!=null) {
+									// Extra
+									throw new SQLException("Should already have been deleted from "+schema+"."+table.getName()+": "+toRow.getPrimaryKeyValues());
+									//toIter.remove();
+								} else {
+									// All rows done
+									break;
+								}
 							}
 						}
+						if(matches!=matchesMap.get(table)) throw new SQLException("Unexpected number of matches on second pass of "+schema+"."+table.getName()+": Expected "+matchesMap.get(table)+", got "+matches);
+						if(updateRows.size()!=modifiedsMap.get(table)) throw new SQLException("Unexpected number of modifieds on second pass of "+schema+"."+table.getName()+": Expected "+modifiedsMap.get(table)+", got "+updateRows.size());
+						if(insertRows.size()!=missingsMap.get(table)) throw new SQLException("Unexpected number of missings on second pass of "+schema+"."+table.getName()+": Expected "+missingsMap.get(table)+", got "+insertRows.size());
+					} finally {
+						toResults.close();
 					}
-					if(matches!=matchesMap.get(table)) throw new SQLException("Unexpected number of matches on second pass of "+schema+"."+table.getName()+": Expected "+matchesMap.get(table)+", got "+matches);
-					if(updateRows.size()!=modifiedsMap.get(table)) throw new SQLException("Unexpected number of modifieds on second pass of "+schema+"."+table.getName()+": Expected "+modifiedsMap.get(table)+", got "+updateRows.size());
-					if(insertRows.size()!=missingsMap.get(table)) throw new SQLException("Unexpected number of missings on second pass of "+schema+"."+table.getName()+": Expected "+missingsMap.get(table)+", got "+insertRows.size());
+				} finally {
+					fromResults.close();
 				}
+			} finally {
+				toStmt.close();
 			}
+		} finally {
+			fromStmt.close();
 		}
 
 		List<Column> pkColumns = primaryKey.getColumns();
@@ -1527,7 +1572,8 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 				}
 				updateSql.append('"').append(pkColumn.getName()).append("\"=?\n");
 			}
-			try (PreparedStatement pstmt = toConn.prepareStatement(updateSql.toString())) {
+			PreparedStatement pstmt = toConn.prepareStatement(updateSql.toString());
+			try {
 				for(Row updateRow : updateRows) {
 					stepOutput.append(
 						ApplicationResources.accessor.getMessage(
@@ -1557,6 +1603,8 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 				for(int c=0;c<counts.length;c++) {
 					if(counts[c]!=1) throw new SQLException("Unexpected update count for "+schema+"."+table.getName()+": Expected 1, got "+counts[c]);
 				}
+			} finally {
+				pstmt.close();
 			}
 		}
 		updatesMap.put(table, (long)updateRows.size());
@@ -1588,7 +1636,8 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 			}
 			insertSql.append("\n"
 					+ ")");
-			try (PreparedStatement pstmt = toConn.prepareStatement(insertSql.toString())) {
+			PreparedStatement pstmt = toConn.prepareStatement(insertSql.toString());
+			try {
 				for(Row insertRow : insertRows) {
 					stepOutput.append(
 						ApplicationResources.accessor.getMessage(
@@ -1612,6 +1661,8 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 				for(int c=0;c<counts.length;c++) {
 					if(counts[c]!=1) throw new SQLException("Unexpected insert count for "+schema+"."+table.getName()+": Expected 1, got "+counts[c]);
 				}
+			} finally {
+				pstmt.close();
 			}
 		}
 		insertsMap.put(table, (long)insertRows.size());

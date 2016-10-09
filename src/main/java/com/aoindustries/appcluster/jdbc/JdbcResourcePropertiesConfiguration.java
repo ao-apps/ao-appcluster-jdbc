@@ -58,7 +58,7 @@ public class JdbcResourcePropertiesConfiguration extends CronResourcePropertiesC
 		if(prepareSlaveNames.isEmpty()) {
 			this.prepareSlaves = Collections.emptyMap();
 		} else {
-			Map<String,String> newPrepareSlaves = new LinkedHashMap<>(prepareSlaveNames.size()*4/3+1);
+			Map<String,String> newPrepareSlaves = new LinkedHashMap<String,String>(prepareSlaveNames.size()*4/3+1);
 			for(String prepareSlaveName : prepareSlaveNames) {
 				newPrepareSlaves.put(
 					prepareSlaveName,
@@ -98,7 +98,7 @@ public class JdbcResourcePropertiesConfiguration extends CronResourcePropertiesC
 	public Set<? extends JdbcResourceNodePropertiesConfiguration> getResourceNodeConfigurations() throws AppClusterConfigurationException {
 		String resourceId = getId();
 		Set<String> nodeIds = properties.getUniqueStrings("appcluster.resource."+id+".nodes", true);
-		Set<JdbcResourceNodePropertiesConfiguration> resourceNodes = new LinkedHashSet<>(nodeIds.size()*4/3+1);
+		Set<JdbcResourceNodePropertiesConfiguration> resourceNodes = new LinkedHashSet<JdbcResourceNodePropertiesConfiguration>(nodeIds.size()*4/3+1);
 		for(String nodeId : nodeIds) {
 			if(!resourceNodes.add(new JdbcResourceNodePropertiesConfiguration(properties, resourceId, nodeId, type))) throw new AssertionError();
 		}
