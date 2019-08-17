@@ -43,8 +43,8 @@ import com.aoindustries.util.ErrorPrinter;
 import com.aoindustries.util.StringUtility;
 import com.aoindustries.util.graph.TopologicalSorter;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -337,9 +337,9 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 					} else {
 						toConn.rollback();
 					}
-				} catch(Throwable T) {
+				} catch(RuntimeException | SQLException e) {
 					toConn.rollback();
-					throw T;
+					throw e;
 				} finally {
 					toConn.setAutoCommit(true);
 					toConn.close();
@@ -825,15 +825,11 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 						// Use the same conversion here
 						case Types.CHAR :
 						case Types.VARCHAR :
-							try {
-								//diff = ((String)val).compareTo((String)otherVal);
-								diff = AoArrays.compare(
-									((String)val).getBytes("UTF-8"),
-									((String)otherVal).getBytes("UTF-8")
-								);
-							} catch(UnsupportedEncodingException exc) {
-								throw new RuntimeException(exc);
-							}
+							//diff = ((String)val).compareTo((String)otherVal);
+							diff = AoArrays.compare(
+								((String)val).getBytes(StandardCharsets.UTF_8),
+								((String)otherVal).getBytes(StandardCharsets.UTF_8)
+							);
 							break;
 						case Types.DATE :
 							diff = ((Date)val).compareTo((Date)otherVal);
