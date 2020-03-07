@@ -35,8 +35,6 @@ along with ao-appcluster-jdbc.  If not, see <http://www.gnu.org/licenses />.
 	<properties>
 		<!-- These values are copied from the project being documented -->
 		<documented.artifactId>ao-appcluster-jdbc</documented.artifactId>
-		<documented.javaVersion>1.8</documented.javaVersion>
-		<documented.javac.link.javaApi>${javac.link.javaApi.jdk8}</documented.javac.link.javaApi>
 		<documented.name>AO AppCluster JDBC</documented.name>
 		<documented.shortTitle>JDBC</documented.shortTitle>
 		<documented.description>Application-level clustering tools for JDBC-level database replication.</documented.description>
