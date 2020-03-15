@@ -1,6 +1,6 @@
 /*
  * ao-appcluster-jdbc - Application-level clustering tools for JDBC-level database replication.
- * Copyright (C) 2011, 2012, 2015, 2016, 2019  AO Industries, Inc.
+ * Copyright (C) 2011, 2012, 2015, 2016, 2019, 2020  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -40,7 +40,7 @@ import com.aoindustries.dbc.meta.Table;
 import com.aoindustries.sql.SQLUtility;
 import com.aoindustries.util.AoArrays;
 import com.aoindustries.util.ErrorPrinter;
-import com.aoindustries.util.StringUtility;
+import com.aoindustries.lang.Strings;
 import com.aoindustries.util.graph.TopologicalSorter;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -670,8 +670,8 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 						"JdbcResourceSynchronizer.comparePrimaryKey.mismatch.columns",
 						fromTable.getSchema(),
 						fromTable,
-						"(" + StringUtility.join(fromPrimaryKey.getColumns(), ", ") + ")",
-						"(" + StringUtility.join(toPrimaryKey.getColumns(), ", ") + ")"
+						"(" + Strings.join(fromPrimaryKey.getColumns(), ", ") + ")",
+						"(" + Strings.join(toPrimaryKey.getColumns(), ", ") + ")"
 					)
 				).append('\n');
 			}
@@ -777,7 +777,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 				default :
 					try {
 						sb.append('\'');
-						StringUtility.replace(value.toString(), "'", "''", sb);
+						Strings.replace(value.toString(), "'", "''", sb);
 						sb.append('\'');
 					} catch(IOException exc) {
 						throw new AssertionError(exc); // Should not happen
