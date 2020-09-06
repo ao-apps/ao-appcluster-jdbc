@@ -38,6 +38,7 @@ import com.aoindustries.dbc.meta.DatabaseMetaData;
 import com.aoindustries.dbc.meta.Index;
 import com.aoindustries.dbc.meta.Schema;
 import com.aoindustries.dbc.meta.Table;
+import com.aoindustries.exception.WrappedException;
 import com.aoindustries.lang.Strings;
 import com.aoindustries.sql.SQLUtility;
 import com.aoindustries.util.ErrorPrinter;
@@ -282,8 +283,10 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 											)
 										);
 									}
-								} catch(SQLException e) {
-									ErrorPrinter.printStackTraces(e, stepError);
+								} catch(ThreadDeath td) {
+									throw td;
+								} catch(Throwable t) {
+									ErrorPrinter.printStackTraces(t, stepError);
 								}
 								steps.add(
 									new ResourceSynchronizationResultStep(
@@ -337,9 +340,14 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 					} else {
 						toConn.rollback();
 					}
-				} catch(RuntimeException | SQLException e) {
+				} catch(ThreadDeath td) {
+					throw td;
+				} catch(Error | RuntimeException | SQLException e) {
 					toConn.rollback();
 					throw e;
+				} catch(Throwable t) {
+					toConn.rollback();
+					throw new WrappedException(t);
 				} finally {
 					toConn.setAutoCommit(true);
 					toConn.close();
@@ -349,10 +357,10 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 				fromConn.setAutoCommit(true);
 				fromConn.close();
 			}
-		} catch(ThreadDeath TD) {
-			throw TD;
-		} catch(Throwable T) {
-			ErrorPrinter.printStackTraces(T, stepError);
+		} catch(ThreadDeath td) {
+			throw td;
+		} catch(Throwable t) {
+			ErrorPrinter.printStackTraces(t, stepError);
 			stepError.append('\n');
 			steps.add(
 				new ResourceSynchronizationResultStep(
