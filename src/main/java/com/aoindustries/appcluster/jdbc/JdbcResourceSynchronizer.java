@@ -129,6 +129,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 	}
 
 	@Override
+	@SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
 	protected ResourceSynchronizationResult synchronize(ResourceSynchronizationMode mode, ResourceNodeDnsResult localDnsResult, ResourceNodeDnsResult remoteDnsResult) {
 		final JdbcResource resource = localResourceNode.getResource();
 
@@ -340,8 +341,6 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 					} else {
 						toConn.rollback();
 					}
-				} catch(ThreadDeath td) {
-					throw td;
 				} catch(Error | RuntimeException | SQLException e) {
 					toConn.rollback();
 					throw e;
