@@ -941,7 +941,9 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		private Row getNextRow() throws SQLException {
 			if(results.next()) {
 				Object[] values = new Object[columns.length];
-				for(int index=0; index<values.length; index++) values[index] = results.getObject(index+1);
+				for(int index=0; index<values.length; index++) {
+					values[index] = results.getObject(index+1);
+				}
 				return new Row(primaryKeyColumns, nonPrimaryKeyColumns, values);
 			} else {
 				return null;
