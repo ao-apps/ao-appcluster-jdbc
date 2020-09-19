@@ -30,8 +30,6 @@ import com.aoindustries.appcluster.ResourceNode;
 import com.aoindustries.collections.AoCollections;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -58,7 +56,7 @@ public class JdbcResourcePropertiesConfiguration extends CronResourcePropertiesC
 		if(prepareSlaveNames.isEmpty()) {
 			this.prepareSlaves = Collections.emptyMap();
 		} else {
-			Map<String,String> newPrepareSlaves = new LinkedHashMap<>(prepareSlaveNames.size()*4/3+1);
+			Map<String,String> newPrepareSlaves = AoCollections.newLinkedHashMap(prepareSlaveNames.size());
 			for(String prepareSlaveName : prepareSlaveNames) {
 				newPrepareSlaves.put(
 					prepareSlaveName,
@@ -70,26 +68,31 @@ public class JdbcResourcePropertiesConfiguration extends CronResourcePropertiesC
 	}
 
 	@Override
+	@SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
 	public Set<String> getSchemas() {
 		return schemas;
 	}
 
 	@Override
+	@SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
 	public Set<String> getTableTypes() {
 		return tableTypes;
 	}
 
 	@Override
+	@SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
 	public Set<String> getExcludeTables() {
 		return excludeTables;
 	}
 
 	@Override
+	@SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
 	public Set<String> getNoWarnTables() {
 		return noWarnTables;
 	}
 
 	@Override
+	@SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
 	public Map<String,String> getPrepareSlaves() {
 		return prepareSlaves;
 	}
@@ -98,7 +101,7 @@ public class JdbcResourcePropertiesConfiguration extends CronResourcePropertiesC
 	public Set<? extends JdbcResourceNodePropertiesConfiguration> getResourceNodeConfigurations() throws AppClusterConfigurationException {
 		String resourceId = getId();
 		Set<String> nodeIds = properties.getUniqueStrings("appcluster.resource."+id+".nodes", true);
-		Set<JdbcResourceNodePropertiesConfiguration> resourceNodes = new LinkedHashSet<>(nodeIds.size()*4/3+1);
+		Set<JdbcResourceNodePropertiesConfiguration> resourceNodes = AoCollections.newLinkedHashSet(nodeIds.size());
 		for(String nodeId : nodeIds) {
 			if(!resourceNodes.add(new JdbcResourceNodePropertiesConfiguration(properties, resourceId, nodeId, type))) throw new AssertionError();
 		}
