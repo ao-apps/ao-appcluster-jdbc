@@ -767,13 +767,16 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		} else {
 			switch(dataType) {
 				// Types without quotes
+				// Note: Matches DatabaseUtils
 				case Types.BIGINT :
 				case Types.BIT :
 				case Types.BOOLEAN :
+				case Types.DECIMAL :
 				case Types.DOUBLE :
 				case Types.FLOAT :
 				case Types.INTEGER :
 				case Types.NULL :
+				case Types.NUMERIC :
 				case Types.REAL :
 				case Types.SMALLINT :
 				case Types.TINYINT :
