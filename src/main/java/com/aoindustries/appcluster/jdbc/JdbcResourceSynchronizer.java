@@ -31,6 +31,7 @@ import com.aoindustries.appcluster.ResourceSynchronizationResult;
 import com.aoindustries.appcluster.ResourceSynchronizationResultStep;
 import com.aoindustries.collections.AoArrays;
 import com.aoindustries.cron.Schedule;
+import com.aoindustries.dbc.DatabaseConnection;
 import com.aoindustries.dbc.NoRowException;
 import com.aoindustries.dbc.meta.Catalog;
 import com.aoindustries.dbc.meta.Column;
@@ -83,8 +84,6 @@ import javax.sql.DataSource;
  * @author  AO Industries, Inc.
  */
 public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResource,JdbcResourceNode> {
-
-	private static final int FETCH_SIZE = 1000;
 
 	protected JdbcResourceSynchronizer(JdbcResourceNode localResourceNode, JdbcResourceNode remoteResourceNode, Schedule synchronizeSchedule, Schedule testSchedule) {
 		super(localResourceNode, remoteResourceNode, synchronizeSchedule, testSchedule);
@@ -1053,10 +1052,10 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		final String sql = getSelectSql(fromTable);
 		try (Statement fromStmt = fromConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
 			fromStmt.setFetchDirection(ResultSet.FETCH_FORWARD);
-			fromStmt.setFetchSize(FETCH_SIZE);
+			fromStmt.setFetchSize(DatabaseConnection.FETCH_SIZE);
 			try (Statement toStmt = toConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
 				toStmt.setFetchDirection(ResultSet.FETCH_FORWARD);
-				toStmt.setFetchSize(FETCH_SIZE);
+				toStmt.setFetchSize(DatabaseConnection.FETCH_SIZE);
 				try (
 					ResultSet fromResults = fromStmt.executeQuery(sql);
 					ResultSet toResults = toStmt.executeQuery(sql)
@@ -1270,10 +1269,10 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		String selectSql = getSelectSql(table);
 		try (Statement fromStmt = fromConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
 			fromStmt.setFetchDirection(ResultSet.FETCH_FORWARD);
-			fromStmt.setFetchSize(FETCH_SIZE);
+			fromStmt.setFetchSize(DatabaseConnection.FETCH_SIZE);
 			try (Statement toStmt = toConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
 				toStmt.setFetchDirection(ResultSet.FETCH_FORWARD);
-				toStmt.setFetchSize(FETCH_SIZE);
+				toStmt.setFetchSize(DatabaseConnection.FETCH_SIZE);
 				try (
 					ResultSet fromResults = fromStmt.executeQuery(selectSql);
 					ResultSet toResults = toStmt.executeQuery(selectSql)
@@ -1445,10 +1444,10 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		String selectSql = getSelectSql(table);
 		try (Statement fromStmt = fromConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
 			fromStmt.setFetchDirection(ResultSet.FETCH_FORWARD);
-			fromStmt.setFetchSize(FETCH_SIZE);
+			fromStmt.setFetchSize(DatabaseConnection.FETCH_SIZE);
 			try (Statement toStmt = toConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
 				toStmt.setFetchDirection(ResultSet.FETCH_FORWARD);
-				toStmt.setFetchSize(FETCH_SIZE);
+				toStmt.setFetchSize(DatabaseConnection.FETCH_SIZE);
 				try (
 					ResultSet fromResults = fromStmt.executeQuery(selectSql);
 					ResultSet toResults = toStmt.executeQuery(selectSql)

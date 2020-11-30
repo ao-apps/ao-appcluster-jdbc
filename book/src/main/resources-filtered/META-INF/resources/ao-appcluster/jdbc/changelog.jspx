@@ -37,7 +37,7 @@ along with ao-appcluster-jdbc.  If not, see <http://www.gnu.org/licenses />.
 		shortTitle="Changelog"
 		tocLevels="1"
 		datePublished="2016-10-29T15:37:32-0500"
-		dateModified="2020-03-28T02:28:56-05:00"
+		dateModified="2020-11-29T19:59:55-06:00"
 	>
 		<!-- The current snapshot, unreleased version -->
 		<c:set var="version" value="@{com.aoindustries:ao-appcluster-jdbc:pom.version}" />
@@ -52,7 +52,20 @@ along with ao-appcluster-jdbc.  If not, see <http://www.gnu.org/licenses />.
 				groupId="@{project.groupId}"
 				artifactId="@{documented.artifactId}"
 				scmUrl="@{project.scm.url}"
-			/>
+			>
+				<ul>
+					<li>
+						<p>
+							Fetch size increased from 1000 to 10000 rows.
+						</p>
+						<p>
+							This value may be increased over time as the amount of typical system memory increases.  As
+							this may affect the number of round trips, and the speed of light is not likely to change,
+							future increases may be of benefit.
+						</p>
+					</li>
+				</ul>
+			</changelog:release>
 		</c:if>
 
 		<changelog:release
