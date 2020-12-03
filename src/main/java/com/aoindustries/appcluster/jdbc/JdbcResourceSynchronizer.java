@@ -40,7 +40,9 @@ import com.aoindustries.dbc.meta.Index;
 import com.aoindustries.dbc.meta.Schema;
 import com.aoindustries.dbc.meta.Table;
 import com.aoindustries.exception.WrappedException;
+import com.aoindustries.i18n.Resources;
 import com.aoindustries.lang.Strings;
+import com.aoindustries.sql.LocalizedSQLException;
 import com.aoindustries.sql.SQLUtility;
 import com.aoindustries.util.ErrorPrinter;
 import com.aoindustries.util.graph.TopologicalSorter;
@@ -85,6 +87,8 @@ import javax.sql.DataSource;
  */
 public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResource,JdbcResourceNode> {
 
+	private static final Resources RESOURCES = Resources.getResources(JdbcResourceSynchronizer.class.getPackage());
+
 	protected JdbcResourceSynchronizer(JdbcResourceNode localResourceNode, JdbcResourceNode remoteResourceNode, Schedule synchronizeSchedule, Schedule testSchedule) {
 		super(localResourceNode, remoteResourceNode, synchronizeSchedule, testSchedule);
 	}
@@ -122,8 +126,8 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 	 */
 	private static Catalog getCatalog(DatabaseMetaData metaData) throws SQLException {
 		SortedMap<String,Catalog> catalogs = metaData.getCatalogs();
-		if(catalogs.isEmpty()) throw new SQLException(ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.getCatalog.noRow"));
-		if(catalogs.size()>1) throw new SQLException(ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.getCatalog.moreThanOneRow"));
+		if(catalogs.isEmpty()) throw new LocalizedSQLException(RESOURCES, "JdbcResourceSynchronizer.getCatalog.noRow");
+		if(catalogs.size()>1) throw new LocalizedSQLException(RESOURCES, "JdbcResourceSynchronizer.getCatalog.moreThanOneRow");
 		return catalogs.get(catalogs.firstKey());
 	}
 
@@ -137,7 +141,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		// If exception is not caught within its own step, the error will be added with this step detail.
 		// Each step should update this.
 		long stepStartTime = System.currentTimeMillis();
-		String step = ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.synchronize.step.connect");
+		String step = RESOURCES.getMessage("JdbcResourceSynchronizer.synchronize.step.connect");
 		StringBuilder stepOutput = new StringBuilder();
 		StringBuilder stepWarning = new StringBuilder();
 		StringBuilder stepError = new StringBuilder();
@@ -210,7 +214,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 
 					// Step #2 Compare meta data
 					stepStartTime = System.currentTimeMillis();
-					step = ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.synchronize.step.compareMetaData");
+					step = RESOURCES.getMessage("JdbcResourceSynchronizer.synchronize.step.compareMetaData");
 					stepOutput.setLength(0);
 					stepWarning.setLength(0);
 					stepError.setLength(0);
@@ -241,7 +245,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 					if(stepError.length()==0) {
 						if(mode==ResourceSynchronizationMode.TEST_ONLY) {
 							stepStartTime = System.currentTimeMillis();
-							step = ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.synchronize.step.compareData");
+							step = RESOURCES.getMessage("JdbcResourceSynchronizer.synchronize.step.compareData");
 							stepOutput.setLength(0);
 							stepWarning.setLength(0);
 							stepError.setLength(0);
@@ -268,7 +272,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 							boolean hasError = false;
 							for(Map.Entry<String,String> prepareSlave : resource.getPrepareSlaves().entrySet()) {
 								stepStartTime = System.currentTimeMillis();
-								step = ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.synchronize.step.prepareSlave", prepareSlave.getKey());
+								step = RESOURCES.getMessage("JdbcResourceSynchronizer.synchronize.step.prepareSlave", prepareSlave.getKey());
 								stepOutput.setLength(0);
 								stepWarning.setLength(0);
 								stepError.setLength(0);
@@ -276,7 +280,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 									try (Statement stmt = toConn.createStatement()) {
 										int updateCount = stmt.executeUpdate(prepareSlave.getValue());
 										stepOutput.append(
-											ApplicationResources.accessor.getMessage(
+											RESOURCES.getMessage(
 												"JdbcResourceSynchronizer.synchronize.step.prepareSlave.updateCount",
 												prepareSlave.getKey(),
 												updateCount
@@ -308,7 +312,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 							}
 							if(!hasError) {
 								stepStartTime = System.currentTimeMillis();
-								step = ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.synchronize.step.synchronizeData");
+								step = RESOURCES.getMessage("JdbcResourceSynchronizer.synchronize.step.synchronizeData");
 								stepOutput.setLength(0);
 								stepWarning.setLength(0);
 								stepError.setLength(0);
@@ -429,11 +433,11 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 					// Exists in both, continue on to check columns
 					compareTable(fromTable, toTable, stepError);
 				} else {
-					stepError.append(ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.compareSchema.missingTable", toSchema.getCatalog(), toSchema, tableName)).append('\n');
+					stepError.append(RESOURCES.getMessage("JdbcResourceSynchronizer.compareSchema.missingTable", toSchema.getCatalog(), toSchema, tableName)).append('\n');
 				}
 			} else {
 				if(toTable!=null) {
-					stepError.append(ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.compareSchema.extraTable", toSchema.getCatalog(), toSchema, tableName)).append('\n');
+					stepError.append(RESOURCES.getMessage("JdbcResourceSynchronizer.compareSchema.extraTable", toSchema.getCatalog(), toSchema, tableName)).append('\n');
 				} else {
 					throw new AssertionError("Must exist in at least one of the sets");
 				}
@@ -445,7 +449,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		assert fromTable.equals(toTable);
 		if(!fromTable.getTableType().equals(toTable.getTableType())) {
 			stepError.append(
-				ApplicationResources.accessor.getMessage(
+				RESOURCES.getMessage(
 					"JdbcResourceSynchronizer.compareTable.mismatchedType",
 					fromTable.getSchema(),
 					fromTable,
@@ -468,11 +472,11 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 						// Exists in both, continue on to check column detail
 						compareColumn(fromColumn, toColumn, stepError);
 					} else {
-						stepError.append(ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.compareTable.missingColumn", toTable.getSchema().getCatalog(), toTable.getSchema(), toTable, columnName)).append('\n');
+						stepError.append(RESOURCES.getMessage("JdbcResourceSynchronizer.compareTable.missingColumn", toTable.getSchema().getCatalog(), toTable.getSchema(), toTable, columnName)).append('\n');
 					}
 				} else {
 					if(toColumn!=null) {
-						stepError.append(ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.compareTable.extraColumn", toTable.getSchema().getCatalog(), toTable.getSchema(), toTable, columnName)).append('\n');
+						stepError.append(RESOURCES.getMessage("JdbcResourceSynchronizer.compareTable.extraColumn", toTable.getSchema().getCatalog(), toTable.getSchema(), toTable, columnName)).append('\n');
 					} else {
 						throw new AssertionError("Must exist in at least one of the sets");
 					}
@@ -487,14 +491,14 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 			Set<? extends Table> toConnected = toTable.getImportedTables();
 			//stepError.append("    toConnected......: ").append(toConnected).append('\n');
 			if(!fromConnected.equals(toConnected)) {
-				stepError.append(ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.compareTable.mismatchedConnectedVertices", fromTable.getSchema(), fromTable, fromConnected, toConnected)).append('\n');
+				stepError.append(RESOURCES.getMessage("JdbcResourceSynchronizer.compareTable.mismatchedConnectedVertices", fromTable.getSchema(), fromTable, fromConnected, toConnected)).append('\n');
 			}
 			Set<? extends Table> fromBackConnected = fromTable.getExportedTables();
 			//stepError.append("    fromBackConnected: ").append(fromBackConnected).append('\n');
 			Set<? extends Table> toBackConnected = toTable.getExportedTables();
 			//stepError.append("    toBackConnected..: ").append(toBackConnected).append('\n');
 			if(!fromBackConnected.equals(toBackConnected)) {
-				stepError.append(ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.compareTable.mismatchedBackConnectedVertices", fromTable.getSchema(), fromTable, fromBackConnected, toBackConnected)).append('\n');
+				stepError.append(RESOURCES.getMessage("JdbcResourceSynchronizer.compareTable.mismatchedBackConnectedVertices", fromTable.getSchema(), fromTable, fromBackConnected, toBackConnected)).append('\n');
 			}
 		}
 	}
@@ -506,7 +510,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		// int typeName
 		if(fromColumn.getDataType()!=toColumn.getDataType()) {
 			stepError.append(
-				ApplicationResources.accessor.getMessage(
+				RESOURCES.getMessage(
 					"JdbcResourceSynchronizer.compareColumn.mismatch.dataType",
 					schema,
 					table,
@@ -519,7 +523,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		// String typeName
 		if(!Objects.equals(fromColumn.getTypeName(), toColumn.getTypeName())) {
 			stepError.append(
-				ApplicationResources.accessor.getMessage(
+				RESOURCES.getMessage(
 					"JdbcResourceSynchronizer.compareColumn.mismatch.typeName",
 					schema,
 					table,
@@ -532,7 +536,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		// Integer columnSize
 		if(!Objects.equals(fromColumn.getColumnSize(), toColumn.getColumnSize())) {
 			stepError.append(
-				ApplicationResources.accessor.getMessage(
+				RESOURCES.getMessage(
 					"JdbcResourceSynchronizer.compareColumn.mismatch.columnSize",
 					schema,
 					table,
@@ -545,7 +549,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		// Integer decimalDigits
 		if(!Objects.equals(fromColumn.getDecimalDigits(), toColumn.getDecimalDigits())) {
 			stepError.append(
-				ApplicationResources.accessor.getMessage(
+				RESOURCES.getMessage(
 					"JdbcResourceSynchronizer.compareColumn.mismatch.decimalDigits",
 					schema,
 					table,
@@ -558,7 +562,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		// int nullable
 		if(fromColumn.getNullable()!=toColumn.getNullable()) {
 			stepError.append(
-				ApplicationResources.accessor.getMessage(
+				RESOURCES.getMessage(
 					"JdbcResourceSynchronizer.compareColumn.mismatch.nullable",
 					schema,
 					table,
@@ -571,7 +575,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		// String columnDef
 		if(!Objects.equals(fromColumn.getColumnDef(), toColumn.getColumnDef())) {
 			stepError.append(
-				ApplicationResources.accessor.getMessage(
+				RESOURCES.getMessage(
 					"JdbcResourceSynchronizer.compareColumn.mismatch.columnDef",
 					schema,
 					table,
@@ -584,7 +588,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		// Integer charOctetLength
 		if(!Objects.equals(fromColumn.getCharOctetLength(), toColumn.getCharOctetLength())) {
 			stepError.append(
-				ApplicationResources.accessor.getMessage(
+				RESOURCES.getMessage(
 					"JdbcResourceSynchronizer.compareColumn.mismatch.charOctetLength",
 					schema,
 					table,
@@ -597,7 +601,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		// int ordinalPosition
 		if(fromColumn.getOrdinalPosition()!=toColumn.getOrdinalPosition()) {
 			stepError.append(
-				ApplicationResources.accessor.getMessage(
+				RESOURCES.getMessage(
 					"JdbcResourceSynchronizer.compareColumn.mismatch.ordinalPosition",
 					schema,
 					table,
@@ -610,7 +614,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		// String isNullable
 		if(!Objects.equals(fromColumn.getIsNullable(), toColumn.getIsNullable())) {
 			stepError.append(
-				ApplicationResources.accessor.getMessage(
+				RESOURCES.getMessage(
 					"JdbcResourceSynchronizer.compareColumn.mismatch.isNullable",
 					schema,
 					table,
@@ -623,7 +627,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		// String isAutoincrement
 		if(!Objects.equals(fromColumn.getIsAutoincrement(), toColumn.getIsAutoincrement())) {
 			stepError.append(
-				ApplicationResources.accessor.getMessage(
+				RESOURCES.getMessage(
 					"JdbcResourceSynchronizer.compareColumn.mismatch.isAutoincrement",
 					schema,
 					table,
@@ -639,7 +643,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		if(fromPrimaryKey==null) {
 			Schema fromSchema = fromTable.getSchema();
 			stepError.append(
-				ApplicationResources.accessor.getMessage(
+				RESOURCES.getMessage(
 					"JdbcResourceSynchronizer.comparePrimaryKey.primaryKeyMissing",
 					fromSchema.getCatalog(),
 					fromSchema,
@@ -650,7 +654,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		if(toPrimaryKey==null) {
 			Schema toSchema = toTable.getSchema();
 			stepError.append(
-				ApplicationResources.accessor.getMessage(
+				RESOURCES.getMessage(
 					"JdbcResourceSynchronizer.comparePrimaryKey.primaryKeyMissing",
 					toSchema.getCatalog(),
 					toSchema,
@@ -661,7 +665,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		if(fromPrimaryKey!=null && toPrimaryKey!=null) {
 			if(!Objects.equals(fromPrimaryKey.getName(), toPrimaryKey.getName())) {
 				stepError.append(
-					ApplicationResources.accessor.getMessage(
+					RESOURCES.getMessage(
 						"JdbcResourceSynchronizer.comparePrimaryKey.mismatch.name",
 						fromTable.getSchema(),
 						fromTable,
@@ -672,7 +676,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 			}
 			if(!fromPrimaryKey.getColumns().equals(toPrimaryKey.getColumns())) {
 				stepError.append(
-					ApplicationResources.accessor.getMessage(
+					RESOURCES.getMessage(
 						"JdbcResourceSynchronizer.comparePrimaryKey.mismatch.columns",
 						fromTable.getSchema(),
 						fromTable,
@@ -697,12 +701,12 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 				stepOutput.setLength(0);
 				SQLUtility.printTable(
 					new String[] {
-						ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.testSchemasData.column.schema"),
-						ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.testSchemasData.column.table"),
-						ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.testSchemasData.column.matches"),
-						ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.testSchemasData.column.modified"),
-						ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.testSchemasData.column.missing"),
-						ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.testSchemasData.column.extra"),
+						RESOURCES.getMessage("JdbcResourceSynchronizer.testSchemasData.column.schema"),
+						RESOURCES.getMessage("JdbcResourceSynchronizer.testSchemasData.column.table"),
+						RESOURCES.getMessage("JdbcResourceSynchronizer.testSchemasData.column.matches"),
+						RESOURCES.getMessage("JdbcResourceSynchronizer.testSchemasData.column.modified"),
+						RESOURCES.getMessage("JdbcResourceSynchronizer.testSchemasData.column.missing"),
+						RESOURCES.getMessage("JdbcResourceSynchronizer.testSchemasData.column.extra"),
 					},
 					outputTable.toArray(),
 					stepOutput,
@@ -1083,7 +1087,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 									} else {
 										// Modified
 										stepResults.append(
-											ApplicationResources.accessor.getMessage(
+											RESOURCES.getMessage(
 												"JdbcResourceSynchronizer.testTableData.modified",
 												schema,
 												fromTable,
@@ -1097,7 +1101,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 								} else if(primaryKeyDiff<0) {
 									// Missing
 									stepResults.append(
-										ApplicationResources.accessor.getMessage(
+										RESOURCES.getMessage(
 											"JdbcResourceSynchronizer.testTableData.missing",
 											schema,
 											fromTable,
@@ -1110,7 +1114,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 									assert primaryKeyDiff>0;
 									// Extra
 									stepResults.append(
-										ApplicationResources.accessor.getMessage(
+										RESOURCES.getMessage(
 											"JdbcResourceSynchronizer.testTableData.extra",
 											schema,
 											toTable,
@@ -1123,7 +1127,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 							} else {
 								// Missing
 								stepResults.append(
-									ApplicationResources.accessor.getMessage(
+									RESOURCES.getMessage(
 										"JdbcResourceSynchronizer.testTableData.missing",
 										schema,
 										fromTable,
@@ -1137,7 +1141,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 							if(toRow!=null) {
 								// Extra
 								stepResults.append(
-									ApplicationResources.accessor.getMessage(
+									RESOURCES.getMessage(
 										"JdbcResourceSynchronizer.testTableData.extra",
 										schema,
 										toTable,
@@ -1223,12 +1227,12 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 				stepOutput.setLength(0);
 				SQLUtility.printTable(
 					new String[] {
-						ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.synchronizeData.column.schema"),
-						ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.synchronizeData.column.table"),
-						ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.synchronizeData.column.matches"),
-						ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.synchronizeData.column.update"),
-						ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.synchronizeData.column.insert"),
-						ApplicationResources.accessor.getMessage("JdbcResourceSynchronizer.synchronizeData.column.delete"),
+						RESOURCES.getMessage("JdbcResourceSynchronizer.synchronizeData.column.schema"),
+						RESOURCES.getMessage("JdbcResourceSynchronizer.synchronizeData.column.table"),
+						RESOURCES.getMessage("JdbcResourceSynchronizer.synchronizeData.column.matches"),
+						RESOURCES.getMessage("JdbcResourceSynchronizer.synchronizeData.column.update"),
+						RESOURCES.getMessage("JdbcResourceSynchronizer.synchronizeData.column.insert"),
+						RESOURCES.getMessage("JdbcResourceSynchronizer.synchronizeData.column.delete"),
 					},
 					outputTable.toArray(),
 					stepOutput,
@@ -1356,7 +1360,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 				}
 				deleteSql.append(")\n");
 				stepOutput.append(
-					ApplicationResources.accessor.getMessage(
+					RESOURCES.getMessage(
 						"JdbcResourceSynchronizer.deleteExtraRows.delete",
 						schema,
 						table,
@@ -1537,7 +1541,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 			try (PreparedStatement pstmt = toConn.prepareStatement(updateSql.toString())) {
 				for(Row updateRow : updateRows) {
 					stepOutput.append(
-						ApplicationResources.accessor.getMessage(
+						RESOURCES.getMessage(
 							"JdbcResourceSynchronizer.updateAndInsertRows.update",
 							schema,
 							table,
@@ -1598,7 +1602,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 			try (PreparedStatement pstmt = toConn.prepareStatement(insertSql.toString())) {
 				for(Row insertRow : insertRows) {
 					stepOutput.append(
-						ApplicationResources.accessor.getMessage(
+						RESOURCES.getMessage(
 							"JdbcResourceSynchronizer.updateAndInsertRows.insert",
 							schema,
 							table,
