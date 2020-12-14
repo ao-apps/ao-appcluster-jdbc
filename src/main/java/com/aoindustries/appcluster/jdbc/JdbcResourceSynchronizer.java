@@ -126,8 +126,8 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 	 */
 	private static Catalog getCatalog(DatabaseMetaData metaData) throws SQLException {
 		SortedMap<String,Catalog> catalogs = metaData.getCatalogs();
-		if(catalogs.isEmpty()) throw new NoRowException(RESOURCES.getMessage("getCatalog.noRow"));
-		if(catalogs.size()>1) throw new ExtraRowException(RESOURCES.getMessage("getCatalog.moreThanOneRow"));
+		if(catalogs.isEmpty()) throw new NoRowException(RESOURCES, "getCatalog.noRow");
+		if(catalogs.size() > 1) throw new ExtraRowException(RESOURCES, "getCatalog.moreThanOneRow");
 		return catalogs.get(catalogs.firstKey());
 	}
 
