@@ -65,6 +65,7 @@ public class JdbcResource extends CronResource<JdbcResource,JdbcResourceNode> {
 	/**
 	 * Gets the set of schemas that will be synchronized.
 	 */
+	@SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
 	public Set<String> getSchemas() {
 		return schemas;
 	}
@@ -72,6 +73,7 @@ public class JdbcResource extends CronResource<JdbcResource,JdbcResourceNode> {
 	/**
 	 * Gets the set of table types that will be synchronized.
 	 */
+	@SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
 	public Set<String> getTableTypes() {
 		return tableTypes;
 	}
@@ -79,6 +81,7 @@ public class JdbcResource extends CronResource<JdbcResource,JdbcResourceNode> {
 	/**
 	 * Gets the set of tables that will be excluded from synchronization, in schema.name format.
 	 */
+	@SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
 	public Set<String> getExcludeTables() {
 		return excludeTables;
 	}
@@ -86,6 +89,7 @@ public class JdbcResource extends CronResource<JdbcResource,JdbcResourceNode> {
 	/**
 	 * Gets the set of tables that will not cause warnings when the data is not an exact match, in schema.name format.
 	 */
+	@SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
 	public Set<String> getNoWarnTables() {
 		return noWarnTables;
 	}
@@ -95,6 +99,7 @@ public class JdbcResource extends CronResource<JdbcResource,JdbcResourceNode> {
 	 * This should be executed in iteration order.  The key is a unique name of the statement for reference and debugging,
 	 * while the SQL statement is the value.
 	 */
+	@SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
 	public Map<String,String> getPrepareSlaves() {
 		return prepareSlaves;
 	}

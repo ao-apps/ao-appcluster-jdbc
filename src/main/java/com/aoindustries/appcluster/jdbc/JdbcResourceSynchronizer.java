@@ -32,6 +32,7 @@ import com.aoindustries.appcluster.ResourceSynchronizationResultStep;
 import com.aoindustries.collections.AoArrays;
 import com.aoindustries.cron.Schedule;
 import com.aoindustries.dbc.DatabaseConnection;
+import com.aoindustries.dbc.ExtraRowException;
 import com.aoindustries.dbc.NoRowException;
 import com.aoindustries.dbc.meta.Catalog;
 import com.aoindustries.dbc.meta.Column;
@@ -42,7 +43,6 @@ import com.aoindustries.dbc.meta.Table;
 import com.aoindustries.exception.WrappedException;
 import com.aoindustries.i18n.Resources;
 import com.aoindustries.lang.Strings;
-import com.aoindustries.sql.LocalizedSQLException;
 import com.aoindustries.sql.SQLUtility;
 import com.aoindustries.util.ErrorPrinter;
 import com.aoindustries.util.graph.TopologicalSorter;
@@ -126,8 +126,8 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 	 */
 	private static Catalog getCatalog(DatabaseMetaData metaData) throws SQLException {
 		SortedMap<String,Catalog> catalogs = metaData.getCatalogs();
-		if(catalogs.isEmpty()) throw new LocalizedSQLException(RESOURCES, "getCatalog.noRow");
-		if(catalogs.size()>1) throw new LocalizedSQLException(RESOURCES, "getCatalog.moreThanOneRow");
+		if(catalogs.isEmpty()) throw new NoRowException(RESOURCES.getMessage("getCatalog.noRow"));
+		if(catalogs.size()>1) throw new ExtraRowException(RESOURCES.getMessage("getCatalog.moreThanOneRow"));
 		return catalogs.get(catalogs.firstKey());
 	}
 
