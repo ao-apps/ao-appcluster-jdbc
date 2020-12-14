@@ -688,6 +688,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	private static void testSchemasData(Connection fromConn, Connection toConn, int timeout, Catalog fromCatalog, Catalog toCatalog, Set<String> schemas, Set<String> tableTypes, Set<String> excludeTables, Set<String> noWarnTables, StringBuilder stepOutput, StringBuilder stepWarning) throws SQLException {
 		List<Object> outputTable = new ArrayList<>();
 		try {
@@ -1167,6 +1168,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	private static void synchronizeData(Connection fromConn, Connection toConn, int synchronizeTimeout, Catalog catalog, Set<String> schemas, Set<String> tableTypes, Set<String> excludeTables, StringBuilder stepOutput) throws SQLException {
 		// Find the set of tables that will be synchronized
 		Set<Table> tables = new LinkedHashSet<>();
