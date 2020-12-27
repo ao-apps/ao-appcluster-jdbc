@@ -277,8 +277,9 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 								stepWarning.setLength(0);
 								stepError.setLength(0);
 								try {
+									String currentSQL = null;
 									try (Statement stmt = toConn.createStatement()) {
-										int updateCount = stmt.executeUpdate(prepareSlave.getValue());
+										int updateCount = stmt.executeUpdate(currentSQL = prepareSlave.getValue());
 										stepOutput.append(
 											RESOURCES.getMessage(
 												"synchronize.step.prepareSlave.updateCount",
@@ -286,6 +287,9 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 												updateCount
 											)
 										);
+									} catch(Error | RuntimeException | SQLException e) {
+										ErrorPrinter.addSQL(e, currentSQL);
+										throw e;
 									}
 								} catch(ThreadDeath td) {
 									throw td;
@@ -1058,15 +1062,17 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		final List<Column> columns = fromTable.getColumns();
 		final Index primaryKey = fromTable.getPrimaryKey();
 		final String sql = getSelectSql(fromTable);
+		String currentFromSQL = null;
 		try (Statement fromStmt = fromConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
 			fromStmt.setFetchDirection(ResultSet.FETCH_FORWARD);
 			fromStmt.setFetchSize(DatabaseConnection.FETCH_SIZE);
+			String currentToSQL = null;
 			try (Statement toStmt = toConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
 				toStmt.setFetchDirection(ResultSet.FETCH_FORWARD);
 				toStmt.setFetchSize(DatabaseConnection.FETCH_SIZE);
 				try (
-					ResultSet fromResults = fromStmt.executeQuery(sql);
-					ResultSet toResults = toStmt.executeQuery(sql)
+					ResultSet fromResults = fromStmt.executeQuery(currentFromSQL = sql);
+					ResultSet toResults = toStmt.executeQuery(currentToSQL = sql)
 				) {
 					long matches = 0;
 					long modified = 0;
@@ -1164,7 +1170,13 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 					outputTable.add(missing==0 ? null : missing);
 					outputTable.add(extra==0 ? null : extra);
 				}
+			} catch(Error | RuntimeException | SQLException e) {
+				ErrorPrinter.addSQL(e, currentToSQL);
+				throw e;
 			}
+		} catch(Error | RuntimeException | SQLException e) {
+			ErrorPrinter.addSQL(e, currentFromSQL);
+			throw e;
 		}
 	}
 
@@ -1276,15 +1288,17 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		// Find rows to delete
 		List<Row> deleteRows = new ArrayList<>();
 		String selectSql = getSelectSql(table);
+		String currentFromSQL = null;
 		try (Statement fromStmt = fromConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
 			fromStmt.setFetchDirection(ResultSet.FETCH_FORWARD);
 			fromStmt.setFetchSize(DatabaseConnection.FETCH_SIZE);
+			String currentToSQL = null;
 			try (Statement toStmt = toConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
 				toStmt.setFetchDirection(ResultSet.FETCH_FORWARD);
 				toStmt.setFetchSize(DatabaseConnection.FETCH_SIZE);
 				try (
-					ResultSet fromResults = fromStmt.executeQuery(selectSql);
-					ResultSet toResults = toStmt.executeQuery(selectSql)
+					ResultSet fromResults = fromStmt.executeQuery(currentFromSQL = selectSql);
+					ResultSet toResults = toStmt.executeQuery(currentToSQL = selectSql)
 				) {
 					long matches = 0;
 					long modified = 0;
@@ -1337,7 +1351,13 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 					modifiedsMap.put(table, modified);
 					missingsMap.put(table, missing);
 				}
+			} catch(Error | RuntimeException | SQLException e) {
+				ErrorPrinter.addSQL(e, currentToSQL);
+				throw e;
 			}
+		} catch(Error | RuntimeException | SQLException e) {
+			ErrorPrinter.addSQL(e, currentFromSQL);
+			throw e;
 		}
 
 		if(!deleteRows.isEmpty()) {
@@ -1371,17 +1391,22 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 				).append('\n');
 			}
 			try (PreparedStatement pstmt = toConn.prepareStatement(deleteSql.toString())) {
-				int pos = 1;
-				for(Row deleteRow : deleteRows) {
-					for(Column pkColumn : pkColumns) {
-						pstmt.setObject(
-							pos++,
-							deleteRow.values[pkColumn.getOrdinalPosition()-1]
-						);
+				try {
+					int pos = 1;
+					for(Row deleteRow : deleteRows) {
+						for(Column pkColumn : pkColumns) {
+							pstmt.setObject(
+								pos++,
+								deleteRow.values[pkColumn.getOrdinalPosition()-1]
+							);
+						}
 					}
+					int numDeleted = pstmt.executeUpdate();
+					if(numDeleted!=deleteRows.size()) throw new SQLException("Unexpected number of rows deleted for "+schema+"."+table.getName()+": Expected "+deleteRows.size()+", got "+numDeleted);
+				} catch(Error | RuntimeException | SQLException e) {
+					ErrorPrinter.addSQL(e, pstmt);
+					throw e;
 				}
-				int numDeleted = pstmt.executeUpdate();
-				if(numDeleted!=deleteRows.size()) throw new SQLException("Unexpected number of rows deleted for "+schema+"."+table.getName()+": Expected "+deleteRows.size()+", got "+numDeleted);
 			}
 		}
 		deletesMap.put(table, (long)deleteRows.size());
@@ -1408,18 +1433,23 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 					sql.append('"').append(pkColumn.getName()).append("\"=?");
 				}
 				try (PreparedStatement pstmt = fromConn.prepareStatement(sql.toString(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
-					int pos = 1;
-					for(Column pkColumn : table.getPrimaryKey().getColumns()) {
-						pstmt.setObject(
-							pos++,
-							row.values[pkColumn.getOrdinalPosition()-1]
-						);
-					}
-					try (ResultSet results = pstmt.executeQuery()) {
-						if(!results.next()) throw new NoRowException();
-						Object realValue = results.getObject(1);
-						if(results.next()) throw new SQLException("More than one row returned");
-						return realValue;
+					try {
+						int pos = 1;
+						for(Column pkColumn : table.getPrimaryKey().getColumns()) {
+							pstmt.setObject(
+								pos++,
+								row.values[pkColumn.getOrdinalPosition()-1]
+							);
+						}
+						try (ResultSet results = pstmt.executeQuery()) {
+							if(!results.next()) throw new NoRowException();
+							Object realValue = results.getObject(1);
+							if(results.next()) throw new SQLException("More than one row returned");
+							return realValue;
+						}
+					} catch(Error | RuntimeException | SQLException e) {
+						ErrorPrinter.addSQL(e, pstmt);
+						throw e;
 					}
 				}
 			}
@@ -1451,15 +1481,17 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		List<Row> updateRows = new ArrayList<>();
 		List<Row> insertRows = new ArrayList<>();
 		String selectSql = getSelectSql(table);
+		String currentFromSQL = null;
 		try (Statement fromStmt = fromConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
 			fromStmt.setFetchDirection(ResultSet.FETCH_FORWARD);
 			fromStmt.setFetchSize(DatabaseConnection.FETCH_SIZE);
+			String currentToSQL = null;
 			try (Statement toStmt = toConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
 				toStmt.setFetchDirection(ResultSet.FETCH_FORWARD);
 				toStmt.setFetchSize(DatabaseConnection.FETCH_SIZE);
 				try (
-					ResultSet fromResults = fromStmt.executeQuery(selectSql);
-					ResultSet toResults = toStmt.executeQuery(selectSql)
+					ResultSet fromResults = fromStmt.executeQuery(currentFromSQL = selectSql);
+					ResultSet toResults = toStmt.executeQuery(currentToSQL = selectSql)
 				) {
 					long matches = 0;
 					RowIterator fromIter = new RowIterator(columns, primaryKey, fromResults);
@@ -1510,7 +1542,13 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 					if(updateRows.size()!=modifiedsMap.get(table)) throw new SQLException("Unexpected number of modifieds on second pass of "+schema+"."+table.getName()+": Expected "+modifiedsMap.get(table)+", got "+updateRows.size());
 					if(insertRows.size()!=missingsMap.get(table)) throw new SQLException("Unexpected number of missings on second pass of "+schema+"."+table.getName()+": Expected "+missingsMap.get(table)+", got "+insertRows.size());
 				}
+			} catch(Error | RuntimeException | SQLException e) {
+				ErrorPrinter.addSQL(e, currentToSQL);
+				throw e;
 			}
+		} catch(Error | RuntimeException | SQLException e) {
+			ErrorPrinter.addSQL(e, currentFromSQL);
+			throw e;
 		}
 
 		List<Column> pkColumns = primaryKey.getColumns();
@@ -1541,34 +1579,39 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 				updateSql.append('"').append(pkColumn.getName()).append("\"=?\n");
 			}
 			try (PreparedStatement pstmt = toConn.prepareStatement(updateSql.toString())) {
-				for(Row updateRow : updateRows) {
-					stepOutput.append(
-						RESOURCES.getMessage(
-							"updateAndInsertRows.update",
-							schema,
-							table,
-							updateRow.getPrimaryKeyValues()
-						)
-					).append('\n');
-					int pos = 1;
-					for(Column column : getNonPrimaryKeyColumns(columns, pkColumns)) {
-						pstmt.setObject(
-							pos++,
-							getRealValue(fromConn, updateRow, column)
-						);
+				try {
+					for(Row updateRow : updateRows) {
+						stepOutput.append(
+							RESOURCES.getMessage(
+								"updateAndInsertRows.update",
+								schema,
+								table,
+								updateRow.getPrimaryKeyValues()
+							)
+						).append('\n');
+						int pos = 1;
+						for(Column column : getNonPrimaryKeyColumns(columns, pkColumns)) {
+							pstmt.setObject(
+								pos++,
+								getRealValue(fromConn, updateRow, column)
+							);
+						}
+						for(Column pkColumn : pkColumns) {
+							pstmt.setObject(
+								pos++,
+								updateRow.values[pkColumn.getOrdinalPosition()-1]
+							);
+						}
+						pstmt.addBatch();
 					}
-					for(Column pkColumn : pkColumns) {
-						pstmt.setObject(
-							pos++,
-							updateRow.values[pkColumn.getOrdinalPosition()-1]
-						);
+					int[] counts = pstmt.executeBatch();
+					if(counts.length!=updateRows.size()) throw new SQLException("Unexpected batch size for "+schema+"."+table.getName()+": Expected "+updateRows.size()+", got "+counts.length);
+					for(int c=0;c<counts.length;c++) {
+						if(counts[c]!=1) throw new SQLException("Unexpected update count for "+schema+"."+table.getName()+": Expected 1, got "+counts[c]);
 					}
-					pstmt.addBatch();
-				}
-				int[] counts = pstmt.executeBatch();
-				if(counts.length!=updateRows.size()) throw new SQLException("Unexpected batch size for "+schema+"."+table.getName()+": Expected "+updateRows.size()+", got "+counts.length);
-				for(int c=0;c<counts.length;c++) {
-					if(counts[c]!=1) throw new SQLException("Unexpected update count for "+schema+"."+table.getName()+": Expected 1, got "+counts[c]);
+				} catch(Error | RuntimeException | SQLException e) {
+					ErrorPrinter.addSQL(e, pstmt);
+					throw e;
 				}
 			}
 		}
@@ -1602,28 +1645,33 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 			insertSql.append("\n"
 					+ ")");
 			try (PreparedStatement pstmt = toConn.prepareStatement(insertSql.toString())) {
-				for(Row insertRow : insertRows) {
-					stepOutput.append(
-						RESOURCES.getMessage(
-							"updateAndInsertRows.insert",
-							schema,
-							table,
-							insertRow.getPrimaryKeyValues()
-						)
-					).append('\n');
-					int pos = 1;
-					for(Column column : columns) {
-						pstmt.setObject(
-							pos++,
-							getRealValue(fromConn, insertRow, column)
-						);
+				try {
+					for(Row insertRow : insertRows) {
+						stepOutput.append(
+							RESOURCES.getMessage(
+								"updateAndInsertRows.insert",
+								schema,
+								table,
+								insertRow.getPrimaryKeyValues()
+							)
+						).append('\n');
+						int pos = 1;
+						for(Column column : columns) {
+							pstmt.setObject(
+								pos++,
+								getRealValue(fromConn, insertRow, column)
+							);
+						}
+						pstmt.addBatch();
 					}
-					pstmt.addBatch();
-				}
-				int[] counts = pstmt.executeBatch();
-				if(counts.length!=insertRows.size()) throw new SQLException("Unexpected batch size for "+schema+"."+table.getName()+": Expected "+insertRows.size()+", got "+counts.length);
-				for(int c=0;c<counts.length;c++) {
-					if(counts[c]!=1) throw new SQLException("Unexpected insert count for "+schema+"."+table.getName()+": Expected 1, got "+counts[c]);
+					int[] counts = pstmt.executeBatch();
+					if(counts.length!=insertRows.size()) throw new SQLException("Unexpected batch size for "+schema+"."+table.getName()+": Expected "+insertRows.size()+", got "+counts.length);
+					for(int c=0;c<counts.length;c++) {
+						if(counts[c]!=1) throw new SQLException("Unexpected insert count for "+schema+"."+table.getName()+": Expected 1, got "+counts[c]);
+					}
+				} catch(Error | RuntimeException | SQLException e) {
+					ErrorPrinter.addSQL(e, pstmt);
+					throw e;
 				}
 			}
 		}
