@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 ao-appcluster-jdbc - Application-level clustering tools for JDBC-level database replication.
-Copyright (C) 2016, 2017, 2019, 2020  AO Industries, Inc.
+Copyright (C) 2016, 2017, 2019, 2020, 2021  AO Industries, Inc.
     support@aoindustries.com
     7262 Bull Pen Cir
     Mobile, AL 36695
@@ -37,7 +37,7 @@ along with ao-appcluster-jdbc.  If not, see <http://www.gnu.org/licenses />.
 		shortTitle="Changelog"
 		tocLevels="1"
 		datePublished="2016-10-29T15:37:32-0500"
-		dateModified="2020-12-26T23:08:27-06:00"
+		dateModified="2021-01-02T14:19:55-06:00"
 	>
 		<c:if test="${fn:endsWith('@{project.version}', '-SNAPSHOT') and !fn:endsWith('@{project.version}', '-POST-SNAPSHOT')}">
 			<changelog:release
@@ -60,7 +60,7 @@ along with ao-appcluster-jdbc.  If not, see <http://www.gnu.org/licenses />.
 					</li>
 					<li>
 						Split development-only classes into a new sub-project in <code>devel/</code>.  This
-						sub-project is used development for only and is never deployed to artifact repositories.
+						sub-project is used only for development and is never deployed to artifact repositories.
 					</li>
 					<li>Now registers SQL statements with <code><ao:a href="https://aoindustries.com/ao-lang/apidocs/com/aoindustries/util/ErrorPrinter.html">ErrorPrinter</ao:a></code>.</li>
 				</ul>
