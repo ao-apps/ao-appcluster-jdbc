@@ -1,6 +1,6 @@
 /*
  * ao-appcluster-jdbc - Application-level clustering tools for JDBC-level database replication.
- * Copyright (C) 2011, 2015, 2016, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2011, 2015, 2016, 2019, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -38,13 +38,13 @@ import java.util.Set;
  *
  * @author  AO Industries, Inc.
  */
-public class JdbcResourcePropertiesConfiguration extends CronResourcePropertiesConfiguration<JdbcResource,JdbcResourceNode> implements JdbcResourceConfiguration {
+public class JdbcResourcePropertiesConfiguration extends CronResourcePropertiesConfiguration<JdbcResource, JdbcResourceNode> implements JdbcResourceConfiguration {
 
 	private final Set<String> schemas;
 	private final Set<String> tableTypes;
 	private final Set<String> excludeTables;
 	private final Set<String> noWarnTables;
-	private final Map<String,String> prepareSlaves;
+	private final Map<String, String> prepareSlaves;
 
 	protected JdbcResourcePropertiesConfiguration(AppClusterPropertiesConfiguration properties, String id) throws AppClusterConfigurationException {
 		super(properties, id);
@@ -56,7 +56,7 @@ public class JdbcResourcePropertiesConfiguration extends CronResourcePropertiesC
 		if(prepareSlaveNames.isEmpty()) {
 			this.prepareSlaves = Collections.emptyMap();
 		} else {
-			Map<String,String> newPrepareSlaves = AoCollections.newLinkedHashMap(prepareSlaveNames.size());
+			Map<String, String> newPrepareSlaves = AoCollections.newLinkedHashMap(prepareSlaveNames.size());
 			for(String prepareSlaveName : prepareSlaveNames) {
 				newPrepareSlaves.put(
 					prepareSlaveName,
@@ -93,7 +93,7 @@ public class JdbcResourcePropertiesConfiguration extends CronResourcePropertiesC
 
 	@Override
 	@SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
-	public Map<String,String> getPrepareSlaves() {
+	public Map<String, String> getPrepareSlaves() {
 		return prepareSlaves;
 	}
 
@@ -109,7 +109,7 @@ public class JdbcResourcePropertiesConfiguration extends CronResourcePropertiesC
 	}
 
 	@Override
-	public JdbcResource newResource(AppCluster cluster, Collection<? extends ResourceNode<?,?>> resourceNodes) throws AppClusterConfigurationException {
+	public JdbcResource newResource(AppCluster cluster, Collection<? extends ResourceNode<?, ?>> resourceNodes) throws AppClusterConfigurationException {
 		return new JdbcResource(cluster, this, resourceNodes);
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * ao-appcluster-jdbc - Application-level clustering tools for JDBC-level database replication.
- * Copyright (C) 2011, 2016, 2020  AO Industries, Inc.
+ * Copyright (C) 2011, 2016, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -37,15 +37,15 @@ import java.util.Set;
  *
  * @author  AO Industries, Inc.
  */
-public class JdbcResource extends CronResource<JdbcResource,JdbcResourceNode> {
+public class JdbcResource extends CronResource<JdbcResource, JdbcResourceNode> {
 
 	private final Set<String> schemas;
 	private final Set<String> tableTypes;
 	private final Set<String> excludeTables;
 	private final Set<String> noWarnTables;
-	private final Map<String,String> prepareSlaves;
+	private final Map<String, String> prepareSlaves;
 
-	protected JdbcResource(AppCluster cluster, JdbcResourceConfiguration resourceConfiguration, Collection<? extends ResourceNode<?,?>> resourceNodes) throws AppClusterConfigurationException {
+	protected JdbcResource(AppCluster cluster, JdbcResourceConfiguration resourceConfiguration, Collection<? extends ResourceNode<?, ?>> resourceNodes) throws AppClusterConfigurationException {
 		super(cluster, resourceConfiguration, resourceNodes);
 		this.schemas = AoCollections.unmodifiableCopySet(resourceConfiguration.getSchemas());
 		this.tableTypes = AoCollections.unmodifiableCopySet(resourceConfiguration.getTableTypes());
@@ -100,12 +100,12 @@ public class JdbcResource extends CronResource<JdbcResource,JdbcResourceNode> {
 	 * while the SQL statement is the value.
 	 */
 	@SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
-	public Map<String,String> getPrepareSlaves() {
+	public Map<String, String> getPrepareSlaves() {
 		return prepareSlaves;
 	}
 
 	@Override
-	protected JdbcResourceSynchronizer newResourceSynchronizer(JdbcResourceNode localResourceNode, JdbcResourceNode remoteResourceNode, ResourceConfiguration<JdbcResource,JdbcResourceNode> resourceConfiguration) throws AppClusterConfigurationException {
+	protected JdbcResourceSynchronizer newResourceSynchronizer(JdbcResourceNode localResourceNode, JdbcResourceNode remoteResourceNode, ResourceConfiguration<JdbcResource, JdbcResourceNode> resourceConfiguration) throws AppClusterConfigurationException {
 		JdbcResourceConfiguration jdbcResourceConfiguration = (JdbcResourceConfiguration)resourceConfiguration;
 		return new JdbcResourceSynchronizer(
 			localResourceNode,

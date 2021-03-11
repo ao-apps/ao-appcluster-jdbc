@@ -1,6 +1,6 @@
 /*
  * ao-appcluster-jdbc - Application-level clustering tools for JDBC-level database replication.
- * Copyright (C) 2011, 2012, 2015, 2016, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2011, 2012, 2015, 2016, 2019, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -85,7 +85,7 @@ import javax.sql.DataSource;
  *
  * @author  AO Industries, Inc.
  */
-public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResource,JdbcResourceNode> {
+public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResource, JdbcResourceNode> {
 
 	private static final Resources RESOURCES = Resources.getResources(JdbcResourceSynchronizer.class);
 
@@ -125,7 +125,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 	 * Gets the catalog.
 	 */
 	private static Catalog getCatalog(DatabaseMetaData metaData) throws SQLException {
-		SortedMap<String,Catalog> catalogs = metaData.getCatalogs();
+		SortedMap<String, Catalog> catalogs = metaData.getCatalogs();
 		if(catalogs.isEmpty()) throw new NoRowException(RESOURCES, "getCatalog.noRow");
 		if(catalogs.size() > 1) throw new ExtraRowException(RESOURCES, "getCatalog.moreThanOneRow");
 		return catalogs.get(catalogs.firstKey());
@@ -270,7 +270,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 						} else if(mode==ResourceSynchronizationMode.SYNCHRONIZE) {
 							// Run any preparation steps
 							boolean hasError = false;
-							for(Map.Entry<String,String> prepareSlave : resource.getPrepareSlaves().entrySet()) {
+							for(Map.Entry<String, String> prepareSlave : resource.getPrepareSlaves().entrySet()) {
 								stepStartTime = System.currentTimeMillis();
 								step = RESOURCES.getMessage("synchronize.step.prepareSlave", prepareSlave.getKey());
 								stepOutput.setLength(0);
@@ -409,8 +409,8 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		Set<String> excludeTables,
 		StringBuilder stepError
 	) throws SQLException {
-		SortedMap<String,Table> fromTables = fromSchema.getTables();
-		SortedMap<String,Table> toTables = toSchema.getTables();
+		SortedMap<String, Table> fromTables = fromSchema.getTables();
+		SortedMap<String, Table> toTables = toSchema.getTables();
 
 		// Get the union of all table names of included types that are not excluded
 		SortedSet<String> allTableNames = new TreeSet<>(DatabaseMetaData.getCollator());
@@ -463,8 +463,8 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 			).append('\n');
 		} else {
 			// Compare columns
-			SortedMap<String,Column> fromColumns = fromTable.getColumnMap();
-			SortedMap<String,Column> toColumns = toTable.getColumnMap();
+			SortedMap<String, Column> fromColumns = fromTable.getColumnMap();
+			SortedMap<String, Column> toColumns = toTable.getColumnMap();
 			SortedSet<String> allColumnNames = new TreeSet<>(DatabaseMetaData.getCollator());
 			allColumnNames.addAll(fromColumns.keySet());
 			allColumnNames.addAll(toColumns.keySet());
@@ -747,8 +747,8 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 	) throws SQLException {
 		assert fromSchema.equals(toSchema);
 
-		SortedMap<String,Table> fromTables = fromSchema.getTables();
-		SortedMap<String,Table> toTables = toSchema.getTables();
+		SortedMap<String, Table> fromTables = fromSchema.getTables();
+		SortedMap<String, Table> toTables = toSchema.getTables();
 
 		assert fromTables.keySet().equals(toTables.keySet()) : "This should have been caught by the meta data checks";
 
@@ -1196,10 +1196,10 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 			}
 		}
 
-		Map<Table,Long> matches = new HashMap<>();
-		Map<Table,Long> updates = new HashMap<>();
-		Map<Table,Long> inserts = new HashMap<>();
-		Map<Table,Long> deletes = new HashMap<>();
+		Map<Table, Long> matches = new HashMap<>();
+		Map<Table, Long> updates = new HashMap<>();
+		Map<Table, Long> inserts = new HashMap<>();
+		Map<Table, Long> deletes = new HashMap<>();
 		try {
 			// Topological sort based on foreign key dependencies
 			List<Table> sortedTables = new ArrayList<>(new TopologicalSorter<>(catalog.getForeignKeyGraph(tableTypes), true).sortGraph());
@@ -1208,8 +1208,8 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 			//stepOutput.append("sortedTables=").append(sortedTables).append('\n');
 
 			// Keep counts from the delete pass to help avoid unnecessary second scans
-			Map<Table,Long> modifieds = new HashMap<>();
-			Map<Table,Long> missings = new HashMap<>();
+			Map<Table, Long> modifieds = new HashMap<>();
+			Map<Table, Long> missings = new HashMap<>();
 
 			// Delete extra rows from each table backwards
 			for(int i=sortedTables.size()-1; i>=0; i--) {
@@ -1277,10 +1277,10 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 		int timeout,
 		Table table,
 		StringBuilder stepOutput,
-		Map<Table,Long> matchesMap,
-		Map<Table,Long> modifiedsMap,
-		Map<Table,Long> missingsMap,
-		Map<Table,Long> deletesMap
+		Map<Table, Long> matchesMap,
+		Map<Table, Long> modifiedsMap,
+		Map<Table, Long> missingsMap,
+		Map<Table, Long> deletesMap
 	) throws SQLException {
 		final String schema = table.getSchema().getName();
 		final List<Column> columns = table.getColumns();

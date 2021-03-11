@@ -1,6 +1,6 @@
 /*
  * ao-appcluster-jdbc - Application-level clustering tools for JDBC-level database replication.
- * Copyright (C) 2011, 2016  AO Industries, Inc.
+ * Copyright (C) 2011, 2016, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -32,10 +32,10 @@ import com.aoindustries.appcluster.ResourcePropertiesConfigurationFactory;
  *
  * @author  AO Industries, Inc.
  */
-public class JdbcResourcePropertiesConfigurationFactory implements ResourcePropertiesConfigurationFactory<JdbcResource,JdbcResourceNode> {
+public class JdbcResourcePropertiesConfigurationFactory implements ResourcePropertiesConfigurationFactory<JdbcResource, JdbcResourceNode> {
 
 	@Override
-	public ResourcePropertiesConfiguration<JdbcResource,JdbcResourceNode> newResourcePropertiesConfiguration(AppClusterPropertiesConfiguration properties, String id) throws AppClusterConfigurationException {
+	public ResourcePropertiesConfiguration<JdbcResource, JdbcResourceNode> newResourcePropertiesConfiguration(AppClusterPropertiesConfiguration properties, String id) throws AppClusterConfigurationException {
 		return new JdbcResourcePropertiesConfiguration(properties, id);
 	}
 }
