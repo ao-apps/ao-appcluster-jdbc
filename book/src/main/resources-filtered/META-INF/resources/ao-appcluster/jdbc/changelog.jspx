@@ -36,7 +36,7 @@ along with ao-appcluster-jdbc.  If not, see <http://www.gnu.org/licenses />.
 		title="@{documented.name} Changelog"
 		shortTitle="Changelog"
 		tocLevels="1"
-		datePublished="2016-10-29T15:37:32-0500"
+		datePublished="2016-10-29T15:37:32-05:00"
 		dateModified="2021-01-02T14:19:55-06:00"
 	>
 		<c:if test="${fn:endsWith('@{project.version}', '-SNAPSHOT') and !fn:endsWith('@{project.version}', '-POST-SNAPSHOT')}">
@@ -88,7 +88,7 @@ along with ao-appcluster-jdbc.  If not, see <http://www.gnu.org/licenses />.
 		<changelog:release
 			projectName="@{documented.name}"
 			version="1.1.2"
-			datePublished="2019-10-05T06:54:35-0500"
+			datePublished="2019-10-05T06:54:35-05:00"
 			groupId="@{project.groupId}"
 			artifactId="@{documented.artifactId}"
 			scmUrl="@{project.scm.url}"
@@ -101,7 +101,7 @@ along with ao-appcluster-jdbc.  If not, see <http://www.gnu.org/licenses />.
 		<changelog:release
 			projectName="@{documented.name}"
 			version="1.1.1"
-			datePublished="2019-06-20T22:17:15-0500"
+			datePublished="2019-06-20T22:17:15-05:00"
 			groupId="@{project.groupId}"
 			artifactId="@{documented.artifactId}"
 			scmUrl="@{project.scm.url}"
@@ -119,7 +119,7 @@ along with ao-appcluster-jdbc.  If not, see <http://www.gnu.org/licenses />.
 		<changelog:release
 			projectName="@{documented.name}"
 			version="1.1.0"
-			datePublished="2019-04-23T05:26:26-0500"
+			datePublished="2019-04-23T05:26:26-05:00"
 			groupId="@{project.groupId}"
 			artifactId="@{documented.artifactId}"
 			scmUrl="@{project.scm.url}"
@@ -132,7 +132,7 @@ along with ao-appcluster-jdbc.  If not, see <http://www.gnu.org/licenses />.
 		<changelog:release
 			projectName="@{documented.name}"
 			version="1.0.3"
-			datePublished="2017-07-19T19:14:23-0500"
+			datePublished="2017-07-19T19:14:23-05:00"
 			groupId="@{project.groupId}"
 			artifactId="@{documented.artifactId}"
 			scmUrl="@{project.scm.url}"
@@ -145,7 +145,7 @@ along with ao-appcluster-jdbc.  If not, see <http://www.gnu.org/licenses />.
 		<changelog:release
 			projectName="@{documented.name}"
 			version="1.0.2"
-			datePublished="2016-11-15T18:42:36-0600"
+			datePublished="2016-11-15T18:42:36-06:00"
 			groupId="@{project.groupId}"
 			artifactId="@{documented.artifactId}"
 			scmUrl="@{project.scm.url}"
@@ -160,7 +160,7 @@ along with ao-appcluster-jdbc.  If not, see <http://www.gnu.org/licenses />.
 		<changelog:release
 			projectName="@{documented.name}"
 			version="1.0.1"
-			datePublished="2016-10-20T19:01:00-0500"
+			datePublished="2016-10-20T19:01:00-05:00"
 			groupId="@{project.groupId}"
 			artifactId="@{documented.artifactId}"
 			scmUrl="@{project.scm.url}"
@@ -174,7 +174,7 @@ along with ao-appcluster-jdbc.  If not, see <http://www.gnu.org/licenses />.
 		<changelog:release
 			projectName="@{documented.name}"
 			version="1.0.0"
-			datePublished="2016-10-08T23:21:00-0500"
+			datePublished="2016-10-08T23:21:00-05:00"
 			groupId="@{project.groupId}"
 			artifactId="@{documented.artifactId}"
 			scmUrl="@{project.scm.url}"
