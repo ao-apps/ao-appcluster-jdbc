@@ -20,32 +20,32 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with ao-appcluster-jdbc.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.aoindustries.appcluster.jdbc;
+package com.aoapps.appcluster.jdbc;
 
-import com.aoindustries.appcluster.CronResourceSynchronizer;
-import com.aoindustries.appcluster.NodeDnsStatus;
-import com.aoindustries.appcluster.ResourceNodeDnsResult;
-import com.aoindustries.appcluster.ResourceStatus;
-import com.aoindustries.appcluster.ResourceSynchronizationMode;
-import com.aoindustries.appcluster.ResourceSynchronizationResult;
-import com.aoindustries.appcluster.ResourceSynchronizationResultStep;
-import com.aoindustries.collections.AoArrays;
-import com.aoindustries.cron.Schedule;
-import com.aoindustries.dbc.DatabaseConnection;
-import com.aoindustries.dbc.ExtraRowException;
-import com.aoindustries.dbc.NoRowException;
-import com.aoindustries.dbc.meta.Catalog;
-import com.aoindustries.dbc.meta.Column;
-import com.aoindustries.dbc.meta.DatabaseMetaData;
-import com.aoindustries.dbc.meta.Index;
-import com.aoindustries.dbc.meta.Schema;
-import com.aoindustries.dbc.meta.Table;
-import com.aoindustries.exception.WrappedException;
-import com.aoindustries.i18n.Resources;
-import com.aoindustries.lang.Strings;
-import com.aoindustries.sql.SQLUtility;
-import com.aoindustries.util.ErrorPrinter;
-import com.aoindustries.util.graph.TopologicalSorter;
+import com.aoapps.appcluster.CronResourceSynchronizer;
+import com.aoapps.appcluster.NodeDnsStatus;
+import com.aoapps.appcluster.ResourceNodeDnsResult;
+import com.aoapps.appcluster.ResourceStatus;
+import com.aoapps.appcluster.ResourceSynchronizationMode;
+import com.aoapps.appcluster.ResourceSynchronizationResult;
+import com.aoapps.appcluster.ResourceSynchronizationResultStep;
+import com.aoapps.collections.AoArrays;
+import com.aoapps.cron.Schedule;
+import com.aoapps.dbc.DatabaseConnection;
+import com.aoapps.dbc.ExtraRowException;
+import com.aoapps.dbc.NoRowException;
+import com.aoapps.dbc.meta.Catalog;
+import com.aoapps.dbc.meta.Column;
+import com.aoapps.dbc.meta.DatabaseMetaData;
+import com.aoapps.dbc.meta.Index;
+import com.aoapps.dbc.meta.Schema;
+import com.aoapps.dbc.meta.Table;
+import com.aoapps.hodgepodge.graph.TopologicalSorter;
+import com.aoapps.lang.Strings;
+import com.aoapps.lang.exception.WrappedException;
+import com.aoapps.lang.i18n.Resources;
+import com.aoapps.lang.util.ErrorPrinter;
+import com.aoapps.sql.SQLUtility;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;

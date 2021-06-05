@@ -20,22 +20,32 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with ao-appcluster-jdbc.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.aoindustries.appcluster.jdbc;
+package com.aoapps.appcluster.jdbc;
 
-import com.aoindustries.appcluster.AppClusterConfigurationException;
-import com.aoindustries.appcluster.AppClusterPropertiesConfiguration;
-import com.aoindustries.appcluster.ResourcePropertiesConfiguration;
-import com.aoindustries.appcluster.ResourcePropertiesConfigurationFactory;
+import com.aoapps.appcluster.AppClusterConfigurationException;
+import com.aoapps.appcluster.CronResourceNode;
+import com.aoapps.appcluster.Node;
 
 /**
- * Loads the configuration for a JDBC resource.
+ * The per-node settings for a JDBC resource.
+ *
+ * @see  JdbcResource
  *
  * @author  AO Industries, Inc.
  */
-public class JdbcResourcePropertiesConfigurationFactory implements ResourcePropertiesConfigurationFactory<JdbcResource, JdbcResourceNode> {
+public class JdbcResourceNode extends CronResourceNode<JdbcResource, JdbcResourceNode> {
 
-	@Override
-	public ResourcePropertiesConfiguration<JdbcResource, JdbcResourceNode> newResourcePropertiesConfiguration(AppClusterPropertiesConfiguration properties, String id) throws AppClusterConfigurationException {
-		return new JdbcResourcePropertiesConfiguration(properties, id);
+	private final String dataSource;
+
+	protected JdbcResourceNode(Node node, JdbcResourceNodeConfiguration resourceNodeConfiguration) throws AppClusterConfigurationException {
+		super(node, resourceNodeConfiguration);
+		this.dataSource = resourceNodeConfiguration.getDataSource();
+	}
+
+	/**
+	 * Gets the data source JNDI name to this node.
+	 */
+	public String getDataSource() {
+		return dataSource;
 	}
 }

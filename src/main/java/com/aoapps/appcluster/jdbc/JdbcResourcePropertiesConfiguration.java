@@ -20,14 +20,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with ao-appcluster-jdbc.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.aoindustries.appcluster.jdbc;
+package com.aoapps.appcluster.jdbc;
 
-import com.aoindustries.appcluster.AppCluster;
-import com.aoindustries.appcluster.AppClusterConfigurationException;
-import com.aoindustries.appcluster.AppClusterPropertiesConfiguration;
-import com.aoindustries.appcluster.CronResourcePropertiesConfiguration;
-import com.aoindustries.appcluster.ResourceNode;
-import com.aoindustries.collections.AoCollections;
+import com.aoapps.appcluster.AppCluster;
+import com.aoapps.appcluster.AppClusterConfigurationException;
+import com.aoapps.appcluster.AppClusterPropertiesConfiguration;
+import com.aoapps.appcluster.CronResourcePropertiesConfiguration;
+import com.aoapps.appcluster.ResourceNode;
+import com.aoapps.collections.AoCollections;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;

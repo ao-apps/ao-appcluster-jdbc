@@ -1,6 +1,6 @@
 /*
  * ao-appcluster-jdbc - Application-level clustering tools for JDBC-level database replication.
- * Copyright (C) 2011, 2016, 2021  AO Industries, Inc.
+ * Copyright (C) 2011, 2016, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -20,24 +20,29 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with ao-appcluster-jdbc.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.aoindustries.appcluster.jdbc;
+package com.aoapps.appcluster.jdbc;
 
-import com.aoindustries.appcluster.AppClusterConfigurationException;
-import com.aoindustries.appcluster.CronResourceNodeConfiguration;
-import com.aoindustries.appcluster.Node;
+import com.aoapps.hodgepodge.i18n.EditableResourceBundle;
+import com.aoapps.hodgepodge.i18n.EditableResourceBundleSet;
+import java.io.File;
+import java.util.Locale;
 
 /**
- * The configuration for a JDBC resource.
- *
  * @author  AO Industries, Inc.
  */
-public interface JdbcResourceNodeConfiguration extends CronResourceNodeConfiguration<JdbcResource, JdbcResourceNode> {
+public final class ApplicationResources extends EditableResourceBundle {
 
-	/**
-	 * @see JdbcResourceNode#getDataSource()
-	 */
-	String getDataSource();
+	static final EditableResourceBundleSet bundleSet = new EditableResourceBundleSet(
+		ApplicationResources.class,
+		Locale.ROOT,
+		Locale.JAPANESE
+	);
 
-	@Override
-	JdbcResourceNode newResourceNode(Node node) throws AppClusterConfigurationException;
+	static File getSourceFile(String filename) {
+		return new File(System.getProperty("user.home") + "/maven2/ao/oss/appcluster/jdbc/src/main/resources/com/aoapps/appcluster/jdbc", filename);
+	}
+
+	public ApplicationResources() {
+		super(Locale.ROOT, bundleSet, getSourceFile("ApplicationResources.properties"));
+	}
 }

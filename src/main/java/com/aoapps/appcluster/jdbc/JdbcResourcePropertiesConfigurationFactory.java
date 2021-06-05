@@ -1,6 +1,6 @@
 /*
  * ao-appcluster-jdbc - Application-level clustering tools for JDBC-level database replication.
- * Copyright (C) 2011, 2016, 2020, 2021  AO Industries, Inc.
+ * Copyright (C) 2011, 2016, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -20,29 +20,22 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with ao-appcluster-jdbc.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.aoindustries.appcluster.jdbc;
+package com.aoapps.appcluster.jdbc;
 
-import com.aoindustries.util.i18n.EditableResourceBundle;
-import com.aoindustries.util.i18n.EditableResourceBundleSet;
-import java.io.File;
-import java.util.Locale;
+import com.aoapps.appcluster.AppClusterConfigurationException;
+import com.aoapps.appcluster.AppClusterPropertiesConfiguration;
+import com.aoapps.appcluster.ResourcePropertiesConfiguration;
+import com.aoapps.appcluster.ResourcePropertiesConfigurationFactory;
 
 /**
+ * Loads the configuration for a JDBC resource.
+ *
  * @author  AO Industries, Inc.
  */
-public final class ApplicationResources extends EditableResourceBundle {
+public class JdbcResourcePropertiesConfigurationFactory implements ResourcePropertiesConfigurationFactory<JdbcResource, JdbcResourceNode> {
 
-	static final EditableResourceBundleSet bundleSet = new EditableResourceBundleSet(
-		ApplicationResources.class,
-		Locale.ROOT,
-		Locale.JAPANESE
-	);
-
-	static File getSourceFile(String filename) {
-		return new File(System.getProperty("user.home") + "/maven2/ao/oss/appcluster/jdbc/src/main/resources/com/aoindustries/appcluster/jdbc", filename);
-	}
-
-	public ApplicationResources() {
-		super(Locale.ROOT, bundleSet, getSourceFile("ApplicationResources.properties"));
+	@Override
+	public ResourcePropertiesConfiguration<JdbcResource, JdbcResourceNode> newResourcePropertiesConfiguration(AppClusterPropertiesConfiguration properties, String id) throws AppClusterConfigurationException {
+		return new JdbcResourcePropertiesConfiguration(properties, id);
 	}
 }
