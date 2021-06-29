@@ -64,6 +64,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -87,7 +88,7 @@ import javax.sql.DataSource;
  */
 public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResource, JdbcResourceNode> {
 
-	private static final Resources RESOURCES = Resources.getResources(JdbcResourceSynchronizer.class);
+	private static final Resources RESOURCES = Resources.getResources(ResourceBundle::getBundle, JdbcResourceSynchronizer.class);
 
 	protected JdbcResourceSynchronizer(JdbcResourceNode localResourceNode, JdbcResourceNode remoteResourceNode, Schedule synchronizeSchedule, Schedule testSchedule) {
 		super(localResourceNode, remoteResourceNode, synchronizeSchedule, testSchedule);

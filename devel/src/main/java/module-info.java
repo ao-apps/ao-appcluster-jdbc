@@ -1,6 +1,6 @@
 /*
  * ao-appcluster-jdbc - Application-level clustering tools for JDBC-level database replication.
- * Copyright (C) 2011, 2016, 2020, 2021  AO Industries, Inc.
+ * Copyright (C) 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -20,21 +20,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with ao-appcluster-jdbc.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.aoapps.appcluster.jdbc;
-
-import com.aoapps.hodgepodge.i18n.EditableResourceBundle;
-import java.util.Locale;
-
-/**
- * @author  AO Industries, Inc.
- */
-public final class ApplicationResources_ja extends EditableResourceBundle {
-
-	public ApplicationResources_ja() {
-		super(
-			Locale.JAPANESE,
-			ApplicationResources.bundleSet,
-			ApplicationResources.getSourceFile("ApplicationResources_ja.properties")
-		);
-	}
+module com.aoapps.appcluster.jdbc.devel {
+	exports com.aoapps.appcluster.jdbc.i18n;
+	// Direct
+	requires com.aoapps.hodgepodge; // <groupId>com.aoapps</groupId><artifactId>ao-hodgepodge</artifactId>
 }
