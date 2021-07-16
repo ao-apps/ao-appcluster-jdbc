@@ -9,6 +9,12 @@
 
 [![Build](https://github.com/aoindustries/ao-appcluster-jdbc/workflows/Build/badge.svg?branch=master)](https://github.com/aoindustries/ao-appcluster-jdbc/actions?query=workflow%3ABuild)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.aoapps/ao-appcluster-jdbc/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aoapps/ao-appcluster-jdbc)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?branch=master&project=com.aoapps%3Aao-appcluster-jdbc&metric=alert_status)](https://sonarcloud.io/dashboard?branch=master&id=com.aoapps%3Aao-appcluster-jdbc)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?branch=master&project=com.aoapps%3Aao-appcluster-jdbc&metric=ncloc)](https://sonarcloud.io/component_measures?branch=master&id=com.aoapps%3Aao-appcluster-jdbc&metric=ncloc)  
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?branch=master&project=com.aoapps%3Aao-appcluster-jdbc&metric=reliability_rating)](https://sonarcloud.io/component_measures?branch=master&id=com.aoapps%3Aao-appcluster-jdbc&metric=Reliability)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?branch=master&project=com.aoapps%3Aao-appcluster-jdbc&metric=security_rating)](https://sonarcloud.io/component_measures?branch=master&id=com.aoapps%3Aao-appcluster-jdbc&metric=Security)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?branch=master&project=com.aoapps%3Aao-appcluster-jdbc&metric=sqale_rating)](https://sonarcloud.io/component_measures?branch=master&id=com.aoapps%3Aao-appcluster-jdbc&metric=Maintainability)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?branch=master&project=com.aoapps%3Aao-appcluster-jdbc&metric=coverage)](https://sonarcloud.io/component_measures?branch=master&id=com.aoapps%3Aao-appcluster-jdbc&metric=Coverage)
 
 Application-level clustering tools for JDBC-level database replication.
 
