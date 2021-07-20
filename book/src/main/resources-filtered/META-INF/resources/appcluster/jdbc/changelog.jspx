@@ -37,7 +37,7 @@ along with ao-appcluster-jdbc.  If not, see <http://www.gnu.org/licenses />.
 		shortTitle="Changelog"
 		tocLevels="1"
 		datePublished="2016-10-29T15:37:32-05:00"
-		dateModified="2021-06-27T16:13:41-05:00"
+		dateModified="2021-07-20T01:33:00-05:00"
 	>
 		<c:if test="${fn:endsWith('@{project.version}', '-SNAPSHOT') and !fn:endsWith('@{project.version}', '-POST-SNAPSHOT')}">
 			<changelog:release
@@ -47,30 +47,39 @@ along with ao-appcluster-jdbc.  If not, see <http://www.gnu.org/licenses />.
 				artifactId="@{documented.artifactId}"
 				repository="@{nexusUrl}content/repositories/snapshots/"
 				scmUrl="@{project.scm.url}"
-			>
-				<ul>
-					<li>
-						<p>
-							Fetch size increased from 1000 to 10000 rows.
-						</p>
-						<p>
-							This value may be increased over time as the amount of typical system memory increases.  As
-							this may affect the number of round trips, and the speed of light is not likely to change,
-							future increases may be of benefit.
-						</p>
-					</li>
-					<li>
-						Split development-only classes into a new sub-project in <code>devel/</code>.  This
-						sub-project is used only for development and is never deployed to artifact repositories.
-					</li>
-					<li>Now registers SQL statements with <code><ao:a href="https://oss.aoapps.com/lang/apidocs/com.aoapps.lang/com/aoapps/lang/util/ErrorPrinter.html">ErrorPrinter</ao:a></code>.</li>
-					<li>Minimum Java version changed from 1.8 to 11.</li>
-					<li>Now supports Java 9+ modules with included <code>module-info.class</code>.</li>
-					<li>Maven artifact relocated from <code>com.aoindustries:ao-appcluster-jdbc</code> to <code>com.aoapps:ao-appcluster-jdbc</code>.</li>
-					<li>Package renamed from <code>com.aoindustries.appcluster.jdbc</code> to <code>com.aoapps.appcluster.jdbc</code>.</li>
-				</ul>
-			</changelog:release>
+			/>
 		</c:if>
+
+		<changelog:release
+			projectName="@{documented.name}"
+			version="2.0.0"
+			datePublished="2021-07-20T01:33:00-05:00"
+			groupId="@{project.groupId}"
+			artifactId="@{documented.artifactId}"
+			scmUrl="@{project.scm.url}"
+		>
+			<ul>
+				<li>
+					<p>
+						Fetch size increased from 1000 to 10000 rows.
+					</p>
+					<p>
+						This value may be increased over time as the amount of typical system memory increases.  As
+						this may affect the number of round trips, and the speed of light is not likely to change,
+						future increases may be of benefit.
+					</p>
+				</li>
+				<li>
+					Split development-only classes into a new sub-project in <code>devel/</code>.  This
+					sub-project is used only for development and is never deployed to artifact repositories.
+				</li>
+				<li>Now registers SQL statements with <code><ao:a href="https://oss.aoapps.com/lang/apidocs/com.aoapps.lang/com/aoapps/lang/util/ErrorPrinter.html">ErrorPrinter</ao:a></code>.</li>
+				<li>Minimum Java version changed from 1.8 to 11.</li>
+				<li>Now supports Java 9+ modules with included <code>module-info.class</code>.</li>
+				<li>Maven artifact relocated from <code>com.aoindustries:ao-appcluster-jdbc</code> to <code>com.aoapps:ao-appcluster-jdbc</code>.</li>
+				<li>Package renamed from <code>com.aoindustries.appcluster.jdbc</code> to <code>com.aoapps.appcluster.jdbc</code>.</li>
+			</ul>
+		</changelog:release>
 
 		<changelog:release
 			projectName="@{documented.name}"
