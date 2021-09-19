@@ -88,7 +88,7 @@ import javax.sql.DataSource;
  */
 public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResource, JdbcResourceNode> {
 
-	private static final Resources RESOURCES = Resources.getResources(ResourceBundle::getBundle, JdbcResourceSynchronizer.class);
+	private static final Resources RESOURCES = Resources.getResources(JdbcResourceSynchronizer.class, ResourceBundle::getBundle);
 
 	protected JdbcResourceSynchronizer(JdbcResourceNode localResourceNode, JdbcResourceNode remoteResourceNode, Schedule synchronizeSchedule, Schedule testSchedule) {
 		super(localResourceNode, remoteResourceNode, synchronizeSchedule, testSchedule);
