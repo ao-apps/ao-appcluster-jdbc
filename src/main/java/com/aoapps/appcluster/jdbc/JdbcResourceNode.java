@@ -1,6 +1,6 @@
 /*
  * ao-appcluster-jdbc - Application-level clustering tools for JDBC-level database replication.
- * Copyright (C) 2011, 2016, 2021  AO Industries, Inc.
+ * Copyright (C) 2011, 2016, 2021, 2022  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -22,7 +22,6 @@
  */
 package com.aoapps.appcluster.jdbc;
 
-import com.aoapps.appcluster.AppClusterConfigurationException;
 import com.aoapps.appcluster.CronResourceNode;
 import com.aoapps.appcluster.Node;
 
@@ -37,7 +36,7 @@ public class JdbcResourceNode extends CronResourceNode<JdbcResource, JdbcResourc
 
 	private final String dataSource;
 
-	protected JdbcResourceNode(Node node, JdbcResourceNodeConfiguration resourceNodeConfiguration) throws AppClusterConfigurationException {
+	protected JdbcResourceNode(Node node, JdbcResourceNodeConfiguration resourceNodeConfiguration) {
 		super(node, resourceNodeConfiguration);
 		this.dataSource = resourceNodeConfiguration.getDataSource();
 	}
