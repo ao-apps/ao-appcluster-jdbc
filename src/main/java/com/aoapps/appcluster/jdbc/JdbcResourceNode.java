@@ -35,17 +35,17 @@ import com.aoapps.appcluster.Node;
  */
 public class JdbcResourceNode extends CronResourceNode<JdbcResource, JdbcResourceNode> {
 
-	private final String dataSource;
+  private final String dataSource;
 
-	protected JdbcResourceNode(Node node, JdbcResourceNodeConfiguration resourceNodeConfiguration) {
-		super(node, resourceNodeConfiguration);
-		this.dataSource = resourceNodeConfiguration.getDataSource();
-	}
+  protected JdbcResourceNode(Node node, JdbcResourceNodeConfiguration resourceNodeConfiguration) {
+    super(node, resourceNodeConfiguration);
+    this.dataSource = resourceNodeConfiguration.getDataSource();
+  }
 
-	/**
-	 * Gets the data source JNDI name to this node.
-	 */
-	public String getDataSource() {
-		return dataSource;
-	}
+  /**
+   * Gets the data source JNDI name to this node.
+   */
+  public String getDataSource() {
+    return dataSource;
+  }
 }

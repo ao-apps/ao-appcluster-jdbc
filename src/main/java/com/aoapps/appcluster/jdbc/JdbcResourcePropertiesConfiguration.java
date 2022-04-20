@@ -41,76 +41,78 @@ import java.util.Set;
  */
 public class JdbcResourcePropertiesConfiguration extends CronResourcePropertiesConfiguration<JdbcResource, JdbcResourceNode> implements JdbcResourceConfiguration {
 
-	private final Set<String> schemas;
-	private final Set<String> tableTypes;
-	private final Set<String> excludeTables;
-	private final Set<String> noWarnTables;
-	private final Map<String, String> prepareSlaves;
+  private final Set<String> schemas;
+  private final Set<String> tableTypes;
+  private final Set<String> excludeTables;
+  private final Set<String> noWarnTables;
+  private final Map<String, String> prepareSlaves;
 
-	protected JdbcResourcePropertiesConfiguration(AppClusterPropertiesConfiguration properties, String id) throws AppClusterConfigurationException {
-		super(properties, id);
-		this.schemas = properties.getUniqueStrings("appcluster.resource."+id+"."+type+".schemas", true);
-		this.tableTypes = properties.getUniqueStrings("appcluster.resource."+id+"."+type+".tableTypes", true);
-		this.excludeTables = properties.getUniqueStrings("appcluster.resource."+id+"."+type+".excludeTables", false);
-		this.noWarnTables = properties.getUniqueStrings("appcluster.resource."+id+"."+type+".noWarnTables", false);
-		Set<String> prepareSlaveNames = properties.getUniqueStrings("appcluster.resource."+id+"."+type+".prepareSlaves", false);
-		if(prepareSlaveNames.isEmpty()) {
-			this.prepareSlaves = Collections.emptyMap();
-		} else {
-			Map<String, String> newPrepareSlaves = AoCollections.newLinkedHashMap(prepareSlaveNames.size());
-			for(String prepareSlaveName : prepareSlaveNames) {
-				newPrepareSlaves.put(
-					prepareSlaveName,
-					properties.getString("appcluster.resource."+id+"."+type+".prepareSlave."+prepareSlaveName, true)
-				);
-			}
-			this.prepareSlaves = AoCollections.optimalUnmodifiableMap(newPrepareSlaves);
-		}
-	}
+  protected JdbcResourcePropertiesConfiguration(AppClusterPropertiesConfiguration properties, String id) throws AppClusterConfigurationException {
+    super(properties, id);
+    this.schemas = properties.getUniqueStrings("appcluster.resource."+id+"."+type+".schemas", true);
+    this.tableTypes = properties.getUniqueStrings("appcluster.resource."+id+"."+type+".tableTypes", true);
+    this.excludeTables = properties.getUniqueStrings("appcluster.resource."+id+"."+type+".excludeTables", false);
+    this.noWarnTables = properties.getUniqueStrings("appcluster.resource."+id+"."+type+".noWarnTables", false);
+    Set<String> prepareSlaveNames = properties.getUniqueStrings("appcluster.resource."+id+"."+type+".prepareSlaves", false);
+    if (prepareSlaveNames.isEmpty()) {
+      this.prepareSlaves = Collections.emptyMap();
+    } else {
+      Map<String, String> newPrepareSlaves = AoCollections.newLinkedHashMap(prepareSlaveNames.size());
+      for (String prepareSlaveName : prepareSlaveNames) {
+        newPrepareSlaves.put(
+          prepareSlaveName,
+          properties.getString("appcluster.resource."+id+"."+type+".prepareSlave."+prepareSlaveName, true)
+        );
+      }
+      this.prepareSlaves = AoCollections.optimalUnmodifiableMap(newPrepareSlaves);
+    }
+  }
 
-	@Override
-	@SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
-	public Set<String> getSchemas() {
-		return schemas;
-	}
+  @Override
+  @SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
+  public Set<String> getSchemas() {
+    return schemas;
+  }
 
-	@Override
-	@SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
-	public Set<String> getTableTypes() {
-		return tableTypes;
-	}
+  @Override
+  @SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
+  public Set<String> getTableTypes() {
+    return tableTypes;
+  }
 
-	@Override
-	@SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
-	public Set<String> getExcludeTables() {
-		return excludeTables;
-	}
+  @Override
+  @SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
+  public Set<String> getExcludeTables() {
+    return excludeTables;
+  }
 
-	@Override
-	@SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
-	public Set<String> getNoWarnTables() {
-		return noWarnTables;
-	}
+  @Override
+  @SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
+  public Set<String> getNoWarnTables() {
+    return noWarnTables;
+  }
 
-	@Override
-	@SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
-	public Map<String, String> getPrepareSlaves() {
-		return prepareSlaves;
-	}
+  @Override
+  @SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
+  public Map<String, String> getPrepareSlaves() {
+    return prepareSlaves;
+  }
 
-	@Override
-	public Set<? extends JdbcResourceNodePropertiesConfiguration> getResourceNodeConfigurations() throws AppClusterConfigurationException {
-		String resourceId = getId();
-		Set<String> nodeIds = properties.getUniqueStrings("appcluster.resource."+id+".nodes", true);
-		Set<JdbcResourceNodePropertiesConfiguration> resourceNodes = AoCollections.newLinkedHashSet(nodeIds.size());
-		for(String nodeId : nodeIds) {
-			if(!resourceNodes.add(new JdbcResourceNodePropertiesConfiguration(properties, resourceId, nodeId, type))) throw new AssertionError();
-		}
-		return AoCollections.optimalUnmodifiableSet(resourceNodes);
-	}
+  @Override
+  public Set<? extends JdbcResourceNodePropertiesConfiguration> getResourceNodeConfigurations() throws AppClusterConfigurationException {
+    String resourceId = getId();
+    Set<String> nodeIds = properties.getUniqueStrings("appcluster.resource."+id+".nodes", true);
+    Set<JdbcResourceNodePropertiesConfiguration> resourceNodes = AoCollections.newLinkedHashSet(nodeIds.size());
+    for (String nodeId : nodeIds) {
+      if (!resourceNodes.add(new JdbcResourceNodePropertiesConfiguration(properties, resourceId, nodeId, type))) {
+        throw new AssertionError();
+      }
+    }
+    return AoCollections.optimalUnmodifiableSet(resourceNodes);
+  }
 
-	@Override
-	public JdbcResource newResource(AppCluster cluster, Collection<? extends ResourceNode<?, ?>> resourceNodes) throws AppClusterConfigurationException {
-		return new JdbcResource(cluster, this, resourceNodes);
-	}
+  @Override
+  public JdbcResource newResource(AppCluster cluster, Collection<? extends ResourceNode<?, ?>> resourceNodes) throws AppClusterConfigurationException {
+    return new JdbcResource(cluster, this, resourceNodes);
+  }
 }

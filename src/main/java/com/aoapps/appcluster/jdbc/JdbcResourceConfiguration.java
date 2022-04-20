@@ -38,34 +38,34 @@ import java.util.Set;
  */
 public interface JdbcResourceConfiguration extends CronResourceConfiguration<JdbcResource, JdbcResourceNode> {
 
-	/**
-	 * @see JdbcResource#getSchemas()
-	 */
-	Collection<String> getSchemas();
+  /**
+   * @see JdbcResource#getSchemas()
+   */
+  Collection<String> getSchemas();
 
-	/**
-	 * @see JdbcResource#getTableTypes()
-	 */
-	Collection<String> getTableTypes();
+  /**
+   * @see JdbcResource#getTableTypes()
+   */
+  Collection<String> getTableTypes();
 
-	/**
-	 * @see JdbcResource#getExcludeTables()
-	 */
-	Collection<String> getExcludeTables();
+  /**
+   * @see JdbcResource#getExcludeTables()
+   */
+  Collection<String> getExcludeTables();
 
-	/**
-	 * @see JdbcResource#getNoWarnTables()
-	 */
-	Collection<String> getNoWarnTables();
+  /**
+   * @see JdbcResource#getNoWarnTables()
+   */
+  Collection<String> getNoWarnTables();
 
-	/**
-	 * @see JdbcResource#getPrepareSlaves()
-	 */
-	Map<String, String> getPrepareSlaves();
+  /**
+   * @see JdbcResource#getPrepareSlaves()
+   */
+  Map<String, String> getPrepareSlaves();
 
-	@Override
-	Set<? extends JdbcResourceNodeConfiguration> getResourceNodeConfigurations() throws AppClusterConfigurationException;
+  @Override
+  Set<? extends JdbcResourceNodeConfiguration> getResourceNodeConfigurations() throws AppClusterConfigurationException;
 
-	@Override
-	JdbcResource newResource(AppCluster cluster, Collection<? extends ResourceNode<?, ?>> resourceNodes) throws AppClusterConfigurationException;
+  @Override
+  JdbcResource newResource(AppCluster cluster, Collection<? extends ResourceNode<?, ?>> resourceNodes) throws AppClusterConfigurationException;
 }
