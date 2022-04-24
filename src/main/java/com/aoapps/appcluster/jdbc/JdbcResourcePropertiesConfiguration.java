@@ -49,19 +49,19 @@ public class JdbcResourcePropertiesConfiguration extends CronResourcePropertiesC
 
   protected JdbcResourcePropertiesConfiguration(AppClusterPropertiesConfiguration properties, String id) throws AppClusterConfigurationException {
     super(properties, id);
-    this.schemas = properties.getUniqueStrings("appcluster.resource."+id+"."+type+".schemas", true);
-    this.tableTypes = properties.getUniqueStrings("appcluster.resource."+id+"."+type+".tableTypes", true);
-    this.excludeTables = properties.getUniqueStrings("appcluster.resource."+id+"."+type+".excludeTables", false);
-    this.noWarnTables = properties.getUniqueStrings("appcluster.resource."+id+"."+type+".noWarnTables", false);
-    Set<String> prepareSlaveNames = properties.getUniqueStrings("appcluster.resource."+id+"."+type+".prepareSlaves", false);
+    this.schemas = properties.getUniqueStrings("appcluster.resource." + id + "." + type + ".schemas", true);
+    this.tableTypes = properties.getUniqueStrings("appcluster.resource." + id + "." + type + ".tableTypes", true);
+    this.excludeTables = properties.getUniqueStrings("appcluster.resource." + id + "." + type + ".excludeTables", false);
+    this.noWarnTables = properties.getUniqueStrings("appcluster.resource." + id + "." + type + ".noWarnTables", false);
+    Set<String> prepareSlaveNames = properties.getUniqueStrings("appcluster.resource." + id + "." + type + ".prepareSlaves", false);
     if (prepareSlaveNames.isEmpty()) {
       this.prepareSlaves = Collections.emptyMap();
     } else {
       Map<String, String> newPrepareSlaves = AoCollections.newLinkedHashMap(prepareSlaveNames.size());
       for (String prepareSlaveName : prepareSlaveNames) {
         newPrepareSlaves.put(
-          prepareSlaveName,
-          properties.getString("appcluster.resource."+id+"."+type+".prepareSlave."+prepareSlaveName, true)
+            prepareSlaveName,
+            properties.getString("appcluster.resource." + id + "." + type + ".prepareSlave." + prepareSlaveName, true)
         );
       }
       this.prepareSlaves = AoCollections.optimalUnmodifiableMap(newPrepareSlaves);
@@ -101,7 +101,7 @@ public class JdbcResourcePropertiesConfiguration extends CronResourcePropertiesC
   @Override
   public Set<? extends JdbcResourceNodePropertiesConfiguration> getResourceNodeConfigurations() throws AppClusterConfigurationException {
     String resourceId = getId();
-    Set<String> nodeIds = properties.getUniqueStrings("appcluster.resource."+id+".nodes", true);
+    Set<String> nodeIds = properties.getUniqueStrings("appcluster.resource." + id + ".nodes", true);
     Set<JdbcResourceNodePropertiesConfiguration> resourceNodes = AoCollections.newLinkedHashSet(nodeIds.size());
     for (String nodeId : nodeIds) {
       if (!resourceNodes.add(new JdbcResourceNodePropertiesConfiguration(properties, resourceId, nodeId, type))) {
