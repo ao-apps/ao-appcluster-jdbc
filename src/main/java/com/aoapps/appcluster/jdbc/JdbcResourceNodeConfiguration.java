@@ -35,7 +35,7 @@ import com.aoapps.appcluster.Node;
 public interface JdbcResourceNodeConfiguration extends CronResourceNodeConfiguration<JdbcResource, JdbcResourceNode> {
 
   /**
-   * @see JdbcResourceNode#getDataSource()
+   * See {@link JdbcResourceNode#getDataSource()}.
    */
   String getDataSource();
 

@@ -39,27 +39,27 @@ import java.util.Set;
 public interface JdbcResourceConfiguration extends CronResourceConfiguration<JdbcResource, JdbcResourceNode> {
 
   /**
-   * @see JdbcResource#getSchemas()
+   * See {@link JdbcResource#getSchemas()}.
    */
   Collection<String> getSchemas();
 
   /**
-   * @see JdbcResource#getTableTypes()
+   * See {@link JdbcResource#getTableTypes()}.
    */
   Collection<String> getTableTypes();
 
   /**
-   * @see JdbcResource#getExcludeTables()
+   * See {@link JdbcResource#getExcludeTables()}.
    */
   Collection<String> getExcludeTables();
 
   /**
-   * @see JdbcResource#getNoWarnTables()
+   * See {@link JdbcResource#getNoWarnTables()}.
    */
   Collection<String> getNoWarnTables();
 
   /**
-   * @see JdbcResource#getPrepareSlaves()
+   * See {@link JdbcResource#getPrepareSlaves()}.
    */
   Map<String, String> getPrepareSlaves();
 

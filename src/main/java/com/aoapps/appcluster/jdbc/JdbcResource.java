@@ -106,7 +106,11 @@ public class JdbcResource extends CronResource<JdbcResource, JdbcResourceNode> {
   }
 
   @Override
-  protected JdbcResourceSynchronizer newResourceSynchronizer(JdbcResourceNode localResourceNode, JdbcResourceNode remoteResourceNode, ResourceConfiguration<JdbcResource, JdbcResourceNode> resourceConfiguration) throws AppClusterConfigurationException {
+  protected JdbcResourceSynchronizer newResourceSynchronizer(
+      JdbcResourceNode localResourceNode,
+      JdbcResourceNode remoteResourceNode,
+      ResourceConfiguration<JdbcResource, JdbcResourceNode> resourceConfiguration
+  ) throws AppClusterConfigurationException {
     JdbcResourceConfiguration jdbcResourceConfiguration = (JdbcResourceConfiguration) resourceConfiguration;
     return new JdbcResourceSynchronizer(
         localResourceNode,

@@ -36,7 +36,10 @@ import com.aoapps.appcluster.ResourcePropertiesConfigurationFactory;
 public class JdbcResourcePropertiesConfigurationFactory implements ResourcePropertiesConfigurationFactory<JdbcResource, JdbcResourceNode> {
 
   @Override
-  public ResourcePropertiesConfiguration<JdbcResource, JdbcResourceNode> newResourcePropertiesConfiguration(AppClusterPropertiesConfiguration properties, String id) throws AppClusterConfigurationException {
+  public ResourcePropertiesConfiguration<JdbcResource, JdbcResourceNode> newResourcePropertiesConfiguration(
+      AppClusterPropertiesConfiguration properties,
+      String id
+  ) throws AppClusterConfigurationException {
     return new JdbcResourcePropertiesConfiguration(properties, id);
   }
 }

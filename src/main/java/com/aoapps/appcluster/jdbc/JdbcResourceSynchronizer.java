@@ -81,9 +81,10 @@ import javax.sql.DataSource;
  * Primary keys themselves are never updated, rows will be deleted and then inserted in this case.
  * For table dependencies, only uses primary keys and foreign keys that go to primary keys.
  * There must not be any cycle in the dependency graph.
- *
+ * <p>
  * TODO: Verify permissions?
  * TODO: Verify indexes?
+ * </p>
  *
  * @author  AO Industries, Inc.
  */
@@ -104,12 +105,11 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
     NodeDnsStatus localDnsStatus = localDnsResult.getNodeStatus();
     NodeDnsStatus remoteDnsStatus = remoteDnsResult.getNodeStatus();
     switch (mode) {
-      case SYNCHRONIZE :
+      case SYNCHRONIZE:
         return
             localDnsStatus == NodeDnsStatus.MASTER
-                && remoteDnsStatus == NodeDnsStatus.SLAVE
-        ;
-      case TEST_ONLY :
+                && remoteDnsStatus == NodeDnsStatus.SLAVE;
+      case TEST_ONLY:
         return
             (
                 localDnsStatus == NodeDnsStatus.MASTER
@@ -117,9 +117,9 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
             ) || (
                 localDnsStatus == NodeDnsStatus.SLAVE
                     && remoteDnsStatus == NodeDnsStatus.MASTER
-            )
-        ;
-      default : throw new AssertionError("Unexpected mode: " + mode);
+            );
+      default:
+        throw new AssertionError("Unexpected mode: " + mode);
     }
   }
 
@@ -159,7 +159,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
       NodeDnsStatus localDnsStatus = localDnsResult.getNodeStatus();
       NodeDnsStatus remoteDnsStatus = remoteDnsResult.getNodeStatus();
       switch (mode) {
-        case SYNCHRONIZE :
+        case SYNCHRONIZE: {
           if (
               localDnsStatus == NodeDnsStatus.MASTER
                   && remoteDnsStatus == NodeDnsStatus.SLAVE
@@ -170,7 +170,8 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
             throw new AssertionError();
           }
           break;
-        case TEST_ONLY :
+        }
+        case TEST_ONLY: {
           if (
               localDnsStatus == NodeDnsStatus.MASTER
                   && remoteDnsStatus == NodeDnsStatus.SLAVE
@@ -187,7 +188,9 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
             throw new AssertionError();
           }
           break;
-        default : throw new AssertionError("Unexpected mode: " + mode);
+        }
+        default:
+          throw new AssertionError("Unexpected mode: " + mode);
       }
       stepOutput.append("fromDataSourceName: ").append(fromDataSourceName).append('\n');
       stepOutput.append("toDataSourceName..: ").append(toDataSourceName).append('\n');
@@ -287,9 +290,9 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
                 stepWarning.setLength(0);
                 stepError.setLength(0);
                 try {
-                  String currentSQL = null;
+                  String currentSql = null;
                   try (Statement stmt = toConn.createStatement()) {
-                    int updateCount = stmt.executeUpdate(currentSQL = prepareSlave.getValue());
+                    int updateCount = stmt.executeUpdate(currentSql = prepareSlave.getValue());
                     stepOutput.append(
                         RESOURCES.getMessage(
                             "synchronize.step.prepareSlave.updateCount",
@@ -298,7 +301,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
                         )
                     );
                   } catch (Error | RuntimeException | SQLException e) {
-                    ErrorPrinter.addSQL(e, currentSQL);
+                    ErrorPrinter.addSql(e, currentSql);
                     throw e;
                   }
                 } catch (ThreadDeath td) {
@@ -710,7 +713,19 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
   }
 
   @SuppressWarnings("deprecation")
-  private static void testSchemasData(Connection fromConn, Connection toConn, int timeout, Catalog fromCatalog, Catalog toCatalog, Set<String> schemas, Set<String> tableTypes, Set<String> excludeTables, Set<String> noWarnTables, StringBuilder stepOutput, StringBuilder stepWarning) throws SQLException {
+  private static void testSchemasData(
+      Connection fromConn,
+      Connection toConn,
+      int timeout,
+      Catalog fromCatalog,
+      Catalog toCatalog,
+      Set<String> schemas,
+      Set<String> tableTypes,
+      Set<String> excludeTables,
+      Set<String> noWarnTables,
+      StringBuilder stepOutput,
+      StringBuilder stepWarning
+  ) throws SQLException {
     List<Object> outputTable = new ArrayList<>();
     try {
       for (String schema : schemas) {
@@ -797,22 +812,22 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
       switch (dataType) {
         // Types without quotes
         // Note: Matches DatabaseUtils
-        case Types.BIGINT :
-        case Types.BIT :
-        case Types.BOOLEAN :
-        case Types.DECIMAL :
-        case Types.DOUBLE :
-        case Types.FLOAT :
-        case Types.INTEGER :
-        case Types.NULL :
-        case Types.NUMERIC :
-        case Types.REAL :
-        case Types.SMALLINT :
-        case Types.TINYINT :
+        case Types.BIGINT:
+        case Types.BIT:
+        case Types.BOOLEAN:
+        case Types.DECIMAL:
+        case Types.DOUBLE:
+        case Types.FLOAT:
+        case Types.INTEGER:
+        case Types.NULL:
+        case Types.NUMERIC:
+        case Types.REAL:
+        case Types.SMALLINT:
+        case Types.TINYINT:
           sb.append(value.toString());
           break;
         // All other types will use quotes
-        default :
+        default:
           try {
             sb.append('\'');
             Strings.replace(value.toString(), "'", "''", sb);
@@ -856,43 +871,44 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
         int dataType = primaryKeyColumn.getDataType();
         try {
           switch (dataType) {
-            case Types.BIGINT :
+            case Types.BIGINT:
               diff = ((Long) val).compareTo((Long) otherVal);
               break;
             // These were converted to UTF8 byte[] during order by.
             // Use the same conversion here
-            case Types.CHAR :
-            case Types.VARCHAR :
+            case Types.CHAR:
+            case Types.VARCHAR:
               //diff = ((String)val).compareTo((String)otherVal);
               diff = AoArrays.compare(
                   ((String) val).getBytes(StandardCharsets.UTF_8),
                   ((String) otherVal).getBytes(StandardCharsets.UTF_8)
               );
               break;
-            case Types.DATE :
+            case Types.DATE:
               diff = ((Date) val).compareTo((Date) otherVal);
               break;
-            case Types.DECIMAL :
-            case Types.NUMERIC :
+            case Types.DECIMAL:
+            case Types.NUMERIC:
               diff = ((BigDecimal) val).compareTo((BigDecimal) otherVal);
               break;
-            case Types.DOUBLE :
+            case Types.DOUBLE:
               diff = ((Double) val).compareTo((Double) otherVal);
               break;
-            case Types.FLOAT :
+            case Types.FLOAT:
               diff = ((Float) val).compareTo((Float) otherVal);
               break;
-            case Types.SMALLINT :
-            case Types.INTEGER :
+            case Types.SMALLINT:
+            case Types.INTEGER:
               diff = ((Integer) val).compareTo((Integer) otherVal);
               break;
-            case Types.TIME :
+            case Types.TIME:
               diff = ((Time) val).compareTo((Time) otherVal);
               break;
-            case Types.TIMESTAMP :
+            case Types.TIMESTAMP:
               diff = ((Timestamp) val).compareTo((Timestamp) otherVal);
               break;
-            default : throw new UnsupportedOperationException("Type comparison not implemented: " + primaryKeyColumn.getDataType());
+            default:
+              throw new UnsupportedOperationException("Type comparison not implemented: " + primaryKeyColumn.getDataType());
           }
         } catch (ClassCastException e) {
           ClassCastException newE = new ClassCastException(e.getMessage() + ": dataType=" + dataType + ", otherVal.class.name=" + otherVal.getClass().getName());
@@ -1043,14 +1059,14 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
       }
       switch (column.getDataType()) {
         // These will be verified using md5
-        case Types.BINARY :
-        case Types.BLOB :
-        case Types.LONGVARBINARY :
-        case Types.VARBINARY :
+        case Types.BINARY:
+        case Types.BLOB:
+        case Types.LONGVARBINARY:
+        case Types.VARBINARY:
           sql.append(" md5(\"").append(column.getName()).append("\")");
           break;
         // All others are fully compared
-        default :
+        default:
           sql.append('"').append(column.getName()).append('"');
       }
     }
@@ -1064,18 +1080,18 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
       }
       switch (column.getDataType()) {
         // These will be verified using md5
-        case Types.BINARY :
-        case Types.BLOB :
-        case Types.LONGVARBINARY :
-        case Types.VARBINARY :
+        case Types.BINARY:
+        case Types.BLOB:
+        case Types.LONGVARBINARY:
+        case Types.VARBINARY:
           throw new SQLException("Type not supported in primary key: " + column.getDataType());
         // These will be converted to UTF8 bytea for collator-neutral ordering (not dependent on PostgreSQL lc_collate setting)
-        case Types.CHAR :
-        case Types.VARCHAR :
+        case Types.CHAR:
+        case Types.VARCHAR:
           sql.append("convert_to(\"").append(column.getName()).append("\", 'UTF8')");
           break;
         // All others are compared directly
-        default :
+        default:
           sql.append('"').append(column.getName()).append('"');
       }
     }
@@ -1103,17 +1119,17 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
     final List<Column> columns = fromTable.getColumns();
     final Index primaryKey = fromTable.getPrimaryKey();
     final String sql = getSelectSql(fromTable);
-    String currentFromSQL = null;
+    String currentFromSql = null;
     try (Statement fromStmt = fromConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
       fromStmt.setFetchDirection(ResultSet.FETCH_FORWARD);
       fromStmt.setFetchSize(DatabaseConnection.FETCH_SIZE);
-      String currentToSQL = null;
+      String currentToSql = null;
       try (Statement toStmt = toConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
         toStmt.setFetchDirection(ResultSet.FETCH_FORWARD);
         toStmt.setFetchSize(DatabaseConnection.FETCH_SIZE);
         try (
-          ResultSet fromResults = fromStmt.executeQuery(currentFromSQL = sql);
-          ResultSet toResults = toStmt.executeQuery(currentToSQL = sql)
+            ResultSet fromResults = fromStmt.executeQuery(currentFromSql = sql);
+            ResultSet toResults = toStmt.executeQuery(currentToSql = sql)
             ) {
           long matches = 0;
           long modified = 0;
@@ -1212,17 +1228,26 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
           outputTable.add(extra == 0 ? null : extra);
         }
       } catch (Error | RuntimeException | SQLException e) {
-        ErrorPrinter.addSQL(e, currentToSQL);
+        ErrorPrinter.addSql(e, currentToSql);
         throw e;
       }
     } catch (Error | RuntimeException | SQLException e) {
-      ErrorPrinter.addSQL(e, currentFromSQL);
+      ErrorPrinter.addSql(e, currentFromSql);
       throw e;
     }
   }
 
   @SuppressWarnings("deprecation")
-  private static void synchronizeData(Connection fromConn, Connection toConn, int synchronizeTimeout, Catalog catalog, Set<String> schemas, Set<String> tableTypes, Set<String> excludeTables, StringBuilder stepOutput) throws SQLException {
+  private static void synchronizeData(
+      Connection fromConn,
+      Connection toConn,
+      int synchronizeTimeout,
+      Catalog catalog,
+      Set<String> schemas,
+      Set<String> tableTypes,
+      Set<String> excludeTables,
+      StringBuilder stepOutput
+  ) throws SQLException {
     // Find the set of tables that will be synchronized
     Set<Table> tables = new LinkedHashSet<>();
     for (String schemaName : schemas) {
@@ -1329,17 +1354,17 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
     // Find rows to delete
     List<Row> deleteRows = new ArrayList<>();
     String selectSql = getSelectSql(table);
-    String currentFromSQL = null;
+    String currentFromSql = null;
     try (Statement fromStmt = fromConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
       fromStmt.setFetchDirection(ResultSet.FETCH_FORWARD);
       fromStmt.setFetchSize(DatabaseConnection.FETCH_SIZE);
-      String currentToSQL = null;
+      String currentToSql = null;
       try (Statement toStmt = toConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
         toStmt.setFetchDirection(ResultSet.FETCH_FORWARD);
         toStmt.setFetchSize(DatabaseConnection.FETCH_SIZE);
         try (
-          ResultSet fromResults = fromStmt.executeQuery(currentFromSQL = selectSql);
-          ResultSet toResults = toStmt.executeQuery(currentToSQL = selectSql)
+            ResultSet fromResults = fromStmt.executeQuery(currentFromSql = selectSql);
+            ResultSet toResults = toStmt.executeQuery(currentToSql = selectSql)
             ) {
           long matches = 0;
           long modified = 0;
@@ -1393,11 +1418,11 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
           missingsMap.put(table, missing);
         }
       } catch (Error | RuntimeException | SQLException e) {
-        ErrorPrinter.addSQL(e, currentToSQL);
+        ErrorPrinter.addSql(e, currentToSql);
         throw e;
       }
     } catch (Error | RuntimeException | SQLException e) {
-      ErrorPrinter.addSQL(e, currentFromSQL);
+      ErrorPrinter.addSql(e, currentFromSql);
       throw e;
     }
 
@@ -1451,7 +1476,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
             throw new SQLException("Unexpected number of rows deleted for " + schema + "." + table.getName() + ": Expected " + deleteRows.size() + ", got " + numDeleted);
           }
         } catch (Error | RuntimeException | SQLException e) {
-          ErrorPrinter.addSQL(e, pstmt);
+          ErrorPrinter.addSql(e, pstmt);
           throw e;
         }
       }
@@ -1465,11 +1490,10 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
   private static Object getRealValue(Connection fromConn, Row row, Column column) throws SQLException {
     switch (column.getDataType()) {
       // These were verified using md5, lookup the actual value
-      case Types.BINARY :
-      case Types.BLOB :
-      case Types.LONGVARBINARY :
-      case Types.VARBINARY :
-      {
+      case Types.BINARY:
+      case Types.BLOB:
+      case Types.LONGVARBINARY:
+      case Types.VARBINARY: {
         Table table = column.getTable();
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT \"").append(column.getName()).append("\" FROM \"").append(table.getSchema().getName()).append("\".\"").append(table.getName()).append("\" WHERE ");
@@ -1502,13 +1526,13 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
               return realValue;
             }
           } catch (Error | RuntimeException | SQLException e) {
-            ErrorPrinter.addSQL(e, pstmt);
+            ErrorPrinter.addSql(e, pstmt);
             throw e;
           }
         }
       }
       // All others are already fully loaded
-      default :
+      default:
         return row.values[column.getOrdinalPosition() - 1];
     }
   }
@@ -1535,17 +1559,17 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
     List<Row> updateRows = new ArrayList<>();
     List<Row> insertRows = new ArrayList<>();
     String selectSql = getSelectSql(table);
-    String currentFromSQL = null;
+    String currentFromSql = null;
     try (Statement fromStmt = fromConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
       fromStmt.setFetchDirection(ResultSet.FETCH_FORWARD);
       fromStmt.setFetchSize(DatabaseConnection.FETCH_SIZE);
-      String currentToSQL = null;
+      String currentToSql = null;
       try (Statement toStmt = toConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
         toStmt.setFetchDirection(ResultSet.FETCH_FORWARD);
         toStmt.setFetchSize(DatabaseConnection.FETCH_SIZE);
         try (
-          ResultSet fromResults = fromStmt.executeQuery(currentFromSQL = selectSql);
-          ResultSet toResults = toStmt.executeQuery(currentToSQL = selectSql)
+            ResultSet fromResults = fromStmt.executeQuery(currentFromSql = selectSql);
+            ResultSet toResults = toStmt.executeQuery(currentToSql = selectSql)
             ) {
           long matches = 0;
           RowIterator fromIter = new RowIterator(columns, primaryKey, fromResults);
@@ -1603,11 +1627,11 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
           }
         }
       } catch (Error | RuntimeException | SQLException e) {
-        ErrorPrinter.addSQL(e, currentToSQL);
+        ErrorPrinter.addSql(e, currentToSql);
         throw e;
       }
     } catch (Error | RuntimeException | SQLException e) {
-      ErrorPrinter.addSQL(e, currentFromSQL);
+      ErrorPrinter.addSql(e, currentFromSql);
       throw e;
     }
 
@@ -1676,7 +1700,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
             }
           }
         } catch (Error | RuntimeException | SQLException e) {
-          ErrorPrinter.addSQL(e, pstmt);
+          ErrorPrinter.addSql(e, pstmt);
           throw e;
         }
       }
@@ -1742,7 +1766,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
             }
           }
         } catch (Error | RuntimeException | SQLException e) {
-          ErrorPrinter.addSQL(e, pstmt);
+          ErrorPrinter.addSql(e, pstmt);
           throw e;
         }
       }
