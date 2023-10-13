@@ -1,6 +1,6 @@
 /*
  * ao-appcluster-jdbc - Application-level clustering tools for JDBC-level database replication.
- * Copyright (C) 2011, 2012, 2015, 2016, 2019, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2011, 2012, 2015, 2016, 2019, 2020, 2021, 2022, 2023  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -1521,7 +1521,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
               }
               Object realValue = results.getObject(1);
               if (results.next()) {
-                throw new SQLException("More than one row returned");
+                throw new ExtraRowException(results);
               }
               return realValue;
             }
