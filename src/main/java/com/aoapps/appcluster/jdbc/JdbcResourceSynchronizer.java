@@ -1,6 +1,6 @@
 /*
  * ao-appcluster-jdbc - Application-level clustering tools for JDBC-level database replication.
- * Copyright (C) 2011, 2012, 2015, 2016, 2019, 2020, 2021, 2022, 2023  AO Industries, Inc.
+ * Copyright (C) 2011, 2012, 2015, 2016, 2019, 2020, 2021, 2022, 2023, 2024  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -92,6 +92,9 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
 
   private static final Resources RESOURCES = Resources.getResources(ResourceBundle::getBundle, JdbcResourceSynchronizer.class);
 
+  /**
+   * Creates a new {@link JdbcResourceSynchronizer}.
+   */
   protected JdbcResourceSynchronizer(JdbcResourceNode localResourceNode, JdbcResourceNode remoteResourceNode, Schedule synchronizeSchedule, Schedule testSchedule) {
     super(localResourceNode, remoteResourceNode, synchronizeSchedule, testSchedule);
   }
