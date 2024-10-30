@@ -81,10 +81,9 @@ import javax.sql.DataSource;
  * Primary keys themselves are never updated, rows will be deleted and then inserted in this case.
  * For table dependencies, only uses primary keys and foreign keys that go to primary keys.
  * There must not be any cycle in the dependency graph.
- * <p>
- * TODO: Verify permissions?
- * TODO: Verify indexes?
- * </p>
+ *
+ * <p>TODO: Verify permissions?
+ * TODO: Verify indexes?</p>
  *
  * @author  AO Industries, Inc.
  */
@@ -162,36 +161,38 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
       NodeDnsStatus localDnsStatus = localDnsResult.getNodeStatus();
       NodeDnsStatus remoteDnsStatus = remoteDnsResult.getNodeStatus();
       switch (mode) {
-        case SYNCHRONIZE: {
-          if (
-              localDnsStatus == NodeDnsStatus.MASTER
-                  && remoteDnsStatus == NodeDnsStatus.SLAVE
-          ) {
-            fromDataSourceName = localResourceNode.getDataSource();
-            toDataSourceName = remoteResourceNode.getDataSource();
-          } else {
-            throw new AssertionError();
+        case SYNCHRONIZE:
+          {
+            if (
+                localDnsStatus == NodeDnsStatus.MASTER
+                    && remoteDnsStatus == NodeDnsStatus.SLAVE
+            ) {
+              fromDataSourceName = localResourceNode.getDataSource();
+              toDataSourceName = remoteResourceNode.getDataSource();
+            } else {
+              throw new AssertionError();
+            }
+            break;
           }
-          break;
-        }
-        case TEST_ONLY: {
-          if (
-              localDnsStatus == NodeDnsStatus.MASTER
-                  && remoteDnsStatus == NodeDnsStatus.SLAVE
-          ) {
-            fromDataSourceName = localResourceNode.getDataSource();
-            toDataSourceName = remoteResourceNode.getDataSource();
-          } else if (
-              localDnsStatus == NodeDnsStatus.SLAVE
-                  && remoteDnsStatus == NodeDnsStatus.MASTER
-          ) {
-            fromDataSourceName = remoteResourceNode.getDataSource();
-            toDataSourceName = localResourceNode.getDataSource();
-          } else {
-            throw new AssertionError();
+        case TEST_ONLY:
+          {
+            if (
+                localDnsStatus == NodeDnsStatus.MASTER
+                    && remoteDnsStatus == NodeDnsStatus.SLAVE
+            ) {
+              fromDataSourceName = localResourceNode.getDataSource();
+              toDataSourceName = remoteResourceNode.getDataSource();
+            } else if (
+                localDnsStatus == NodeDnsStatus.SLAVE
+                    && remoteDnsStatus == NodeDnsStatus.MASTER
+            ) {
+              fromDataSourceName = remoteResourceNode.getDataSource();
+              toDataSourceName = localResourceNode.getDataSource();
+            } else {
+              throw new AssertionError();
+            }
+            break;
           }
-          break;
-        }
         default:
           throw new AssertionError("Unexpected mode: " + mode);
       }
@@ -1496,44 +1497,45 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
       case Types.BINARY:
       case Types.BLOB:
       case Types.LONGVARBINARY:
-      case Types.VARBINARY: {
-        Table table = column.getTable();
-        StringBuilder sql = new StringBuilder();
-        sql.append("SELECT \"").append(column.getName()).append("\" FROM \"").append(table.getSchema().getName()).append("\".\"").append(table.getName()).append("\" WHERE ");
-        boolean didOne = false;
-        for (Column pkColumn : table.getPrimaryKey().getColumns()) {
-          if (didOne) {
-            sql.append(" AND ");
-          } else {
-            didOne = true;
-          }
-          sql.append('"').append(pkColumn.getName()).append("\"=?");
-        }
-        try (PreparedStatement pstmt = fromConn.prepareStatement(sql.toString(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
-          try {
-            int pos = 1;
-            for (Column pkColumn : table.getPrimaryKey().getColumns()) {
-              pstmt.setObject(
-                  pos++,
-                  row.values[pkColumn.getOrdinalPosition() - 1]
-              );
+      case Types.VARBINARY:
+        {
+          Table table = column.getTable();
+          StringBuilder sql = new StringBuilder();
+          sql.append("SELECT \"").append(column.getName()).append("\" FROM \"").append(table.getSchema().getName()).append("\".\"").append(table.getName()).append("\" WHERE ");
+          boolean didOne = false;
+          for (Column pkColumn : table.getPrimaryKey().getColumns()) {
+            if (didOne) {
+              sql.append(" AND ");
+            } else {
+              didOne = true;
             }
-            try (ResultSet results = pstmt.executeQuery()) {
-              if (!results.next()) {
-                throw new NoRowException();
+            sql.append('"').append(pkColumn.getName()).append("\"=?");
+          }
+          try (PreparedStatement pstmt = fromConn.prepareStatement(sql.toString(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)) {
+            try {
+              int pos = 1;
+              for (Column pkColumn : table.getPrimaryKey().getColumns()) {
+                pstmt.setObject(
+                    pos++,
+                    row.values[pkColumn.getOrdinalPosition() - 1]
+                );
               }
-              Object realValue = results.getObject(1);
-              if (results.next()) {
-                throw new ExtraRowException(results);
+              try (ResultSet results = pstmt.executeQuery()) {
+                if (!results.next()) {
+                  throw new NoRowException();
+                }
+                Object realValue = results.getObject(1);
+                if (results.next()) {
+                  throw new ExtraRowException(results);
+                }
+                return realValue;
               }
-              return realValue;
+            } catch (Error | RuntimeException | SQLException e) {
+              ErrorPrinter.addSql(e, pstmt);
+              throw e;
             }
-          } catch (Error | RuntimeException | SQLException e) {
-            ErrorPrinter.addSql(e, pstmt);
-            throw e;
           }
         }
-      }
       // All others are already fully loaded
       default:
         return row.values[column.getOrdinalPosition() - 1];
