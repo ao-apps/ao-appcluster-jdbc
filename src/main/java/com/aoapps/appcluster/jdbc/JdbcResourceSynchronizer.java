@@ -128,15 +128,21 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
   /**
    * Gets the catalog.
    */
-  private static Catalog getCatalog(DatabaseMetaData metaData) throws SQLException {
-    SortedMap<String, Catalog> catalogs = metaData.getCatalogs();
-    if (catalogs.isEmpty()) {
-      throw new NoRowException(RESOURCES, "getCatalog.noRow");
+  private static Catalog getCatalog(Connection conn) throws SQLException {
+    String catalogName;
+    try (
+        Statement stmt = conn.createStatement();
+        ResultSet results = stmt.executeQuery("SELECT current_catalog")
+    ) {
+      if (!results.next()) {
+        throw new NoRowException(RESOURCES, "getCatalog.noRow");
+      }
+      catalogName = results.getString(1);
+      if (results.next()) {
+        throw new ExtraRowException(RESOURCES, "getCatalog.moreThanOneRow");
+      }
     }
-    if (catalogs.size() > 1) {
-      throw new ExtraRowException(RESOURCES, "getCatalog.moreThanOneRow", catalogs.toString());
-    }
-    return catalogs.get(catalogs.firstKey());
+    return new DatabaseMetaData(conn).getCatalog(catalogName);
   }
 
   @Override
@@ -236,8 +242,8 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
           stepWarning.setLength(0);
           stepError.setLength(0);
 
-          Catalog fromCatalog = getCatalog(new DatabaseMetaData(fromConn));
-          Catalog toCatalog = getCatalog(new DatabaseMetaData(toConn));
+          Catalog fromCatalog = getCatalog(fromConn);
+          Catalog toCatalog = getCatalog(toConn);
 
           final Set<String> schemas = resource.getSchemas();
           final Set<String> tableTypes = resource.getTableTypes();
