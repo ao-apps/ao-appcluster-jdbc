@@ -129,18 +129,9 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
    * Gets the catalog.
    */
   private static Catalog getCatalog(Connection conn) throws SQLException {
-    String catalogName;
-    try (
-        Statement stmt = conn.createStatement();
-        ResultSet results = stmt.executeQuery("SELECT current_catalog")
-    ) {
-      if (!results.next()) {
-        throw new NoRowException(RESOURCES, "getCatalog.noRow");
-      }
-      catalogName = results.getString(1);
-      if (results.next()) {
-        throw new ExtraRowException(RESOURCES, "getCatalog.moreThanOneRow");
-      }
+    String catalogName = conn.getCatalog();
+    if (catalogName == null) {
+      throw new NoRowException(RESOURCES, "getCatalog.noCatalog");
     }
     return new DatabaseMetaData(conn).getCatalog(catalogName);
   }
