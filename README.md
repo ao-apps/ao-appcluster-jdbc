@@ -22,7 +22,7 @@ Application-level clustering tools for JDBC-level database replication.
 * [Project Home](https://oss.aoapps.com/appcluster/jdbc/)
 * [Changelog](https://oss.aoapps.com/appcluster/jdbc/changelog)
 * [API Docs](https://oss.aoapps.com/appcluster/jdbc/apidocs/)
-* [Maven Central Repository](https://central.sonatype.com/artifact/com.aoapps/ao-appcluster-jdbc)
+* [Central Repository](https://central.sonatype.com/artifact/com.aoapps/ao-appcluster-jdbc)
 * [GitHub](https://github.com/ao-apps/ao-appcluster-jdbc)
 
 ## Contact Us
