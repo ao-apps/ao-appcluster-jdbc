@@ -510,18 +510,18 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
       // Compare primary key
       comparePrimaryKey(fromTable, toTable, fromTable.getPrimaryKey(), toTable.getPrimaryKey(), stepError);
       // Compare foreign keys
-      //stepError.append(fromTable.getSchema()).append('.').append(fromTable.getName()).append('\n');
+      // stepError.append(fromTable.getSchema()).append('.').append(fromTable.getName()).append('\n');
       Set<? extends Table> fromConnected = fromTable.getImportedTables();
-      //stepError.append("    fromConnected....: ").append(fromConnected).append('\n');
+      // stepError.append("    fromConnected....: ").append(fromConnected).append('\n');
       Set<? extends Table> toConnected = toTable.getImportedTables();
-      //stepError.append("    toConnected......: ").append(toConnected).append('\n');
+      // stepError.append("    toConnected......: ").append(toConnected).append('\n');
       if (!fromConnected.equals(toConnected)) {
         stepError.append(RESOURCES.getMessage("compareTable.mismatchedConnectedVertices", fromTable.getSchema(), fromTable, fromConnected, toConnected)).append('\n');
       }
       Set<? extends Table> fromBackConnected = fromTable.getExportedTables();
-      //stepError.append("    fromBackConnected: ").append(fromBackConnected).append('\n');
+      // stepError.append("    fromBackConnected: ").append(fromBackConnected).append('\n');
       Set<? extends Table> toBackConnected = toTable.getExportedTables();
-      //stepError.append("    toBackConnected..: ").append(toBackConnected).append('\n');
+      // stepError.append("    toBackConnected..: ").append(toBackConnected).append('\n');
       if (!fromBackConnected.equals(toBackConnected)) {
         stepError.append(RESOURCES.getMessage("compareTable.mismatchedBackConnectedVertices", fromTable.getSchema(), fromTable, fromBackConnected, toBackConnected)).append('\n');
       }
@@ -879,7 +879,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
             // Use the same conversion here
             case Types.CHAR:
             case Types.VARCHAR:
-              //diff = ((String)val).compareTo((String)otherVal);
+              // diff = ((String)val).compareTo((String)otherVal);
               diff = AoArrays.compare(
                   ((String) val).getBytes(StandardCharsets.UTF_8),
                   ((String) otherVal).getBytes(StandardCharsets.UTF_8)
@@ -1270,9 +1270,9 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
     try {
       // Topological sort based on foreign key dependencies
       List<Table> sortedTables = new ArrayList<>(new TopologicalSorter<>(catalog.getForeignKeyGraph(tableTypes), true).sortGraph());
-      //stepOutput.append("sortedTables=").append(sortedTables).append('\n');
+      // stepOutput.append("sortedTables=").append(sortedTables).append('\n');
       sortedTables.retainAll(tables);
-      //stepOutput.append("sortedTables=").append(sortedTables).append('\n');
+      // stepOutput.append("sortedTables=").append(sortedTables).append('\n');
 
       // Keep counts from the delete pass to help avoid unnecessary second scans
       Map<Table, Long> modifieds = new HashMap<>();
@@ -1611,7 +1611,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
               if (toRow != null) {
                 // Extra
                 throw new SQLException("Should already have been deleted from " + schema + "." + table.getName() + ": " + toRow.getPrimaryKeyValues());
-                //toIter.remove();
+                // toIter.remove();
               } else {
                 // All rows done
                 break;
