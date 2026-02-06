@@ -37,9 +37,9 @@ along with ao-appcluster-jdbc.  If not, see <https://www.gnu.org/licenses/>.
     shortTitle="Changelog"
     tocLevels="1"
     datePublished="2016-10-29T15:37:32-05:00"
-    dateModified="2025-07-02T23:05:45Z"
+    dateModified="2026-02-06T04:20:31Z"
   >
-    <c:set var="latestRelease" value="2.0.0" />
+    <c:set var="latestRelease" value="3.0.0" />
     <c:if test="${
       fn:endsWith('@{project.version}', '-SNAPSHOT')
       and !fn:endsWith('@{project.version}', '-POST-SNAPSHOT')
@@ -51,16 +51,25 @@ along with ao-appcluster-jdbc.  If not, see <https://www.gnu.org/licenses/>.
         groupId="@{project.groupId}"
         artifactId="@{documented.artifactId}"
         scmUrl="@{project.scm.url}"
-      >
-        <ul>
-          <li>
-            Latest PostgreSQL JDBC drivers are now returning multiple catalogs from
-            <code>DatabaseMetaData.getCatalogs()</code>.  Previously, only the current catalog was returned.
-            Now using <code>SELECT current_catalog</code> instead.
-          </li>
-        </ul>
-      </changelog:release>
+      />
     </c:if>
+
+    <changelog:release
+      projectName="@{documented.name}"
+      version="3.0.0"
+      datePublished="2026-02-06T04:20:31Z"
+      groupId="@{project.groupId}"
+      artifactId="@{documented.artifactId}"
+      scmUrl="@{project.scm.url}"
+    >
+      <ul>
+        <li>
+          Latest PostgreSQL JDBC drivers are now returning multiple catalogs from
+          <code>DatabaseMetaData.getCatalogs()</code>.  Previously, only the current catalog was returned.
+          Now using <code>SELECT current_catalog</code> instead.
+        </li>
+      </ul>
+    </changelog:release>
 
     <changelog:release
       projectName="@{documented.name}"
