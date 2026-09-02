@@ -1,6 +1,6 @@
 /*
  * ao-appcluster-jdbc - Application-level clustering tools for JDBC-level database replication.
- * Copyright (C) 2011, 2012, 2015, 2016, 2019, 2020, 2021, 2022, 2023, 2024, 2025  AO Industries, Inc.
+ * Copyright (C) 2011, 2012, 2015, 2016, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -738,7 +738,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
         String currentOut = stepOutput.toString();
         stepOutput.setLength(0);
         SQLUtility.printTable(
-            new String[]{
+            new String[] {
                 RESOURCES.getMessage("testSchemasData.column.schema"),
                 RESOURCES.getMessage("testSchemasData.column.table"),
                 RESOURCES.getMessage("testSchemasData.column.matches"),
@@ -749,7 +749,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
             outputTable.toArray(),
             stepOutput,
             true,
-            new boolean[]{
+            new boolean[] {
                 false,
                 false,
                 true,
@@ -1307,7 +1307,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
         String currentOut = stepOutput.toString();
         stepOutput.setLength(0);
         SQLUtility.printTable(
-            new String[]{
+            new String[] {
                 RESOURCES.getMessage("synchronizeData.column.schema"),
                 RESOURCES.getMessage("synchronizeData.column.table"),
                 RESOURCES.getMessage("synchronizeData.column.matches"),
@@ -1318,7 +1318,7 @@ public class JdbcResourceSynchronizer extends CronResourceSynchronizer<JdbcResou
             outputTable.toArray(),
             stepOutput,
             true,
-            new boolean[]{
+            new boolean[] {
                 false,
                 false,
                 true,
