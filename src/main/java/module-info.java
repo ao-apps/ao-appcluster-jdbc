@@ -1,6 +1,6 @@
 /*
  * ao-appcluster-jdbc - Application-level clustering tools for JDBC-level database replication.
- * Copyright (C) 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2021, 2022, 2026  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -21,7 +21,6 @@
  * along with ao-appcluster-jdbc.  If not, see <https://www.gnu.org/licenses/>.
  */
 module com.aoapps.appcluster.jdbc {
-  exports com.aoapps.appcluster.jdbc;
   // Direct
   requires com.aoapps.appcluster.core; // <groupId>com.aoapps</groupId><artifactId>ao-appcluster-core</artifactId>
   requires com.aoapps.collections; // <groupId>com.aoapps</groupId><artifactId>ao-collections</artifactId>
@@ -33,4 +32,6 @@ module com.aoapps.appcluster.jdbc {
   // Java SE
   requires java.naming;
   requires java.sql;
+
+  exports com.aoapps.appcluster.jdbc;
 }
